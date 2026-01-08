@@ -43,6 +43,9 @@ const Navbar = () => {
           <Link to="/contact" className="hover:text-brand-gold transition">
             CONTACT
           </Link>
+          <Link to="/blog" className="hover:text-brand-gold transition">
+            BLOG
+          </Link>
         </div>
 
         <button className="bg-brand-gold text-white px-6 py-3 rounded-sm hover:bg-brand-goldHover transition font-bold uppercase text-xs tracking-widest">
