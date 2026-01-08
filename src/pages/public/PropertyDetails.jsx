@@ -6,19 +6,16 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/thumbs";
 
-// IMPORT THE SHARED DATA
 import { properties } from "../../data/mockData";
 
 const PropertyDetails = () => {
-  const { id } = useParams(); // Get ID from URL
+  const { id } = useParams();
   const [thumbsSwiper, setThumbsSwiper] = useState(null);
   const [property, setProperty] = useState(null);
 
   useEffect(() => {
-    // 1. Scroll to top
     window.scrollTo(0, 0);
 
-    // 2. Find the property that matches the ID from URL
     const found = properties.find((p) => p.id === parseInt(id));
 
     if (found) {
@@ -35,10 +32,8 @@ const PropertyDetails = () => {
   }
 
   return (
-    // Added pt-32 to push content down below the fixed navbar
     <div className="bg-brand-gray min-h-screen pt-32 pb-20">
       <div className="container mx-auto px-6">
-        {/* Header Section */}
         <div className="flex flex-col md:flex-row justify-between items-start mb-8 animate-fade-in-up">
           <div>
             <span className="bg-brand-navy text-white text-xs font-bold px-3 py-1 uppercase tracking-wider rounded-sm mb-3 inline-block">
@@ -78,7 +73,6 @@ const PropertyDetails = () => {
           </div>
         </div>
 
-        {/* Gallery Section */}
         <div className="rounded-3xl overflow-hidden shadow-2xl mb-12 bg-white animate-fade-in-up">
           <Swiper
             style={{
@@ -127,11 +121,8 @@ const PropertyDetails = () => {
           </Swiper>
         </div>
 
-        {/* Content Grid */}
         <div className="flex flex-col lg:flex-row gap-12">
-          {/* LEFT: Details */}
           <div className="lg:w-2/3">
-            {/* Specs */}
             <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-wrap justify-between items-center mb-8">
               <div className="text-center px-4 border-r border-gray-100 last:border-0">
                 <div className="text-gray-400 text-xs uppercase tracking-wider mb-1">
@@ -167,7 +158,6 @@ const PropertyDetails = () => {
               </div>
             </div>
 
-            {/* Description */}
             <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 mb-8">
               <h3 className="text-xl font-heading font-bold text-brand-navy mb-4">
                 Description
@@ -177,7 +167,6 @@ const PropertyDetails = () => {
               </p>
             </div>
 
-            {/* Amenities */}
             <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 mb-8">
               <h3 className="text-xl font-heading font-bold text-brand-navy mb-6">
                 Amenities
@@ -193,7 +182,6 @@ const PropertyDetails = () => {
             </div>
           </div>
 
-          {/* RIGHT: Sticky Agent Sidebar */}
           <div className="lg:w-1/3">
             <div className="sticky top-32 space-y-8">
               <div className="bg-white rounded-2xl p-8 shadow-lg border-t-4 border-brand-gold">
