@@ -7,6 +7,7 @@ import ClientLayout from "./layouts/ClientLayout";
 import Home from "./pages/public/Home";
 import PropertyDetails from "./pages/public/PropertyDetails";
 import Properties from "./pages/public/Properties";
+import About from "./pages/public/About";
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Route path="/" element={<ClientLayout />}>
           <Route index element={<Home />} />
           {/* Future routes like Properties, Contact will go here */}
+          <Route path="about" element={<About />} />
           <Route path="properties" element={<Properties />} />
 
           <Route path="properties/:id" element={<PropertyDetails />} />

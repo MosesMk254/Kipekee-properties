@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 
 const StorySection = () => {
   return (
@@ -30,9 +31,11 @@ const StorySection = () => {
               personalized buying experience.
             </p>
 
-            <button className="border-2 border-brand-navy text-brand-navy px-8 py-3 font-bold uppercase text-xs tracking-widest hover:bg-brand-navy hover:text-white transition-all duration-300 rounded-sm">
-              Read More About Us
-            </button>
+            <Link to="/about">
+              <button className="border-2 border-brand-navy text-brand-navy px-8 py-3 font-bold uppercase text-xs tracking-widest hover:bg-brand-navy hover:text-white transition-all duration-300 rounded-sm">
+                Read More About Us
+              </button>
+            </Link>
           </motion.div>
 
           <motion.div

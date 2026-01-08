@@ -34,6 +34,9 @@ const Navbar = () => {
           <Link to="/" className="hover:text-brand-gold transition">
             HOME
           </Link>
+          <Link to="/about" className="hover:text-brand-gold transition">
+            ABOUT
+          </Link>
           <Link to="/properties" className="hover:text-brand-gold transition">
             PROPERTIES
           </Link>
