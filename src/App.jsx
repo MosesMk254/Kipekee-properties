@@ -10,6 +10,7 @@ import Properties from "./pages/public/Properties";
 import About from "./pages/public/About";
 import Blog from "./pages/public/Blog";
 import BlogDetails from "./pages/public/BlogDetails";
+import Contact from "./pages/public/Contact";
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
           {/* Future routes like Properties, Contact will go here */}
           <Route path="about" element={<About />} />
           <Route path="properties" element={<Properties />} />
+          <Route path="contact" element={<Contact />} />
           <Route path="blog" element={<Blog />} />
 
           <Route path="properties/:id" element={<PropertyDetails />} />
