@@ -1,30 +1,23 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+
+// Layouts
 import ClientLayout from "./layouts/ClientLayout";
-import Hero from "./components/public/Hero";
 
-// The Home Page Assembly
-const Home = () => {
-  return (
-    <div>
-      <Hero />
-
-      <section className="py-20 bg-brand-gray text-center">
-        <h2 className="text-3xl font-heading font-bold mb-4">
-          Latest Properties
-        </h2>
-        <p className="text-gray-500">Property grid coming next...</p>
-      </section>
-    </div>
-  );
-};
+// Pages
+import Home from "./pages/public/Home";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* PUBLIC ROUTES (Client Side) */}
         <Route path="/" element={<ClientLayout />}>
           <Route index element={<Home />} />
+          {/* Future routes like Properties, Contact will go here */}
         </Route>
+
+        {/* ADMIN ROUTES (Dashboard) - We will build this next */}
+        {/* <Route path="/admin" element={<AdminLayout />}> ... </Route> */}
       </Routes>
     </BrowserRouter>
   );
