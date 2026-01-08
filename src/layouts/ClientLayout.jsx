@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Outlet, Link } from "react-router-dom";
+import Footer from "../components/public/Footer";
 
 const ClientLayout = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -46,11 +47,7 @@ const ClientLayout = () => {
         <Outlet />
       </main>
 
-      <footer className="bg-brand-navy text-white py-8 text-center border-t border-white/10">
-        <p className="opacity-50 text-sm font-light">
-          © 2026 Kipekee Properties. Built with React.
-        </p>
-      </footer>
+      <Footer />
     </div>
   );
 };

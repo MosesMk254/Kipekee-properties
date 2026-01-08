@@ -1,6 +1,11 @@
 import { motion } from "framer-motion";
+
 import Hero from "../../components/public/Hero";
+import StorySection from "../../components/public/StorySection";
 import PropertyCard from "../../components/public/PropertyCard";
+import LocationGrid from "../../components/public/LocationGrid";
+import Testimonials from "../../components/public/Testimonials";
+import ContactSection from "../../components/public/ContactSection";
 
 const Home = () => {
   const featuredProperties = [
@@ -42,35 +47,18 @@ const Home = () => {
     },
   ];
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.3, 
-      },
-    },
-  };
-
-  const cardVariants = {
-    hidden: { y: 50, opacity: 0 }, 
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: { type: "spring", stiffness: 100, damping: 12 }, 
-    },
-  };
-
   return (
     <div>
       <Hero />
+
+      <StorySection />
+
       <section className="py-24 bg-gradient-to-b from-brand-gray to-gray-200 overflow-hidden">
         <div className="container mx-auto px-6">
           <motion.div
-            initial={{ opacity: 0, y: -20 }}
+            initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
             className="text-center mb-16"
           >
             <h5 className="text-brand-gold font-bold tracking-widest uppercase mb-2 text-sm">
@@ -79,43 +67,36 @@ const Home = () => {
             <h2 className="text-4xl font-heading font-bold text-brand-navy">
               Featured Properties
             </h2>
-            <motion.div
-              initial={{ width: 0 }}
-              whileInView={{ width: 96 }} 
-              viewport={{ once: true }}
-              transition={{ delay: 0.5, duration: 1 }}
-              className="h-1 bg-brand-gold mx-auto mt-6 rounded-full"
-            ></motion.div>
+            <div className="w-24 h-1 bg-brand-gold mx-auto mt-6 rounded-full"></div>
           </motion.div>
 
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-50px" }} 
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12"
-          >
-            {featuredProperties.map((prop) => (
-              <motion.div key={prop.id} variants={cardVariants}>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
+            {featuredProperties.map((prop, index) => (
+              <motion.div
+                key={prop.id}
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.2, duration: 0.5 }}
+              >
                 <PropertyCard property={prop} />
               </motion.div>
             ))}
-          </motion.div>
+          </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.8, duration: 0.5 }}
-            className="text-center mt-20"
-          >
-            <button className="group relative overflow-hidden bg-brand-navy text-white px-12 py-5 font-bold uppercase text-sm tracking-widest rounded-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
-              <span className="relative z-10">View All Properties</span>
-              <div className="absolute inset-0 h-full w-0 bg-brand-gold transition-all duration-300 group-hover:w-full z-0"></div>
+          <div className="text-center mt-20">
+            <button className="bg-brand-navy text-white px-12 py-5 font-bold uppercase text-sm tracking-widest rounded-sm hover:bg-brand-gold transition-colors duration-300">
+              View All Properties
             </button>
-          </motion.div>
+          </div>
         </div>
       </section>
+
+      <LocationGrid />
+
+      <Testimonials />
+
+      <ContactSection />
     </div>
   );
 };
