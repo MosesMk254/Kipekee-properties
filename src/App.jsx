@@ -1,25 +1,22 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import ClientLayout from "./layouts/ClientLayout";
+import Hero from "./components/public/Hero";
 
-const Home = () => (
-  <div className="h-[120vh]">
-    <div className="h-screen bg-slate-700 flex items-center justify-center relative">
-      <div className="absolute inset-0 bg-black/40 z-10"></div>
-      <div className="z-20 text-center">
-        <h1 className="text-6xl text-white font-bold mb-4">
-          Find Your Dream Home
-        </h1>
-        <p className="text-xl text-brand-gold italic">
-          Luxury Real Estate in Kenya
-        </p>
-      </div>
+// The Home Page Assembly
+const Home = () => {
+  return (
+    <div>
+      <Hero />
+
+      <section className="py-20 bg-brand-gray text-center">
+        <h2 className="text-3xl font-heading font-bold mb-4">
+          Latest Properties
+        </h2>
+        <p className="text-gray-500">Property grid coming next...</p>
+      </section>
     </div>
-    <div className="p-20 text-center">
-      <h2 className="text-4xl mb-4">Latest Properties</h2>
-      <p>Scroll down to see the header change color.</p>
-    </div>
-  </div>
-);
+  );
+};
 
 function App() {
   return (
