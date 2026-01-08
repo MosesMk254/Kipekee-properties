@@ -6,46 +6,10 @@ import PropertyCard from "../../components/public/PropertyCard";
 import LocationGrid from "../../components/public/LocationGrid";
 import Testimonials from "../../components/public/Testimonials";
 import ContactSection from "../../components/public/ContactSection";
+import { properties } from "../../data/mockData";
 
 const Home = () => {
-  const featuredProperties = [
-    {
-      id: 1,
-      title: "Modern Glass Villa Runda",
-      price: "KES 85,000,000",
-      location: "Runda, Nairobi",
-      image:
-        "https://images.unsplash.com/photo-1613490493576-7fde63acd811?q=80&w=1920&auto=format&fit=crop",
-      status: "For Sale",
-      beds: 5,
-      baths: 6,
-      sqft: 4500,
-    },
-    {
-      id: 2,
-      title: "Skyline Penthouse Westlands",
-      price: "KES 250,000 / mo",
-      location: "Westlands, Nairobi",
-      image:
-        "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?q=80&w=1920&auto=format&fit=crop",
-      status: "For Rent",
-      beds: 3,
-      baths: 3,
-      sqft: 2800,
-    },
-    {
-      id: 3,
-      title: "Karen Exclusive Mansion",
-      price: "KES 120,000,000",
-      location: "Karen, Nairobi",
-      image:
-        "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1920&auto=format&fit=crop",
-      status: "For Sale",
-      beds: 6,
-      baths: 7,
-      sqft: 6500,
-    },
-  ];
+  const featuredProperties = properties.slice(0, 3);
 
   return (
     <div>

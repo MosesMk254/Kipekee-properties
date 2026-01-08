@@ -3,7 +3,10 @@ import { Link } from "react-router-dom";
 const PropertyCard = ({ property }) => {
   return (
     <div className="group relative rounded-3xl overflow-hidden transition-all duration-500 hover:-translate-y-3 hover:shadow-2xl bg-white">
-      <div className="relative h-[340px] overflow-hidden">
+      <Link
+        to={`/properties/${property.id}`}
+        className="block relative h-[340px] overflow-hidden"
+      >
         <img
           src={property.image}
           alt={property.title}
@@ -20,7 +23,12 @@ const PropertyCard = ({ property }) => {
           </div>
         </div>
 
-        <button className="absolute top-5 right-5 z-10 bg-white/30 backdrop-blur-md border border-white/20 text-white hover:bg-white hover:text-red-500 p-3 rounded-full transition-all duration-300 shadow-lg group-hover:scale-110">
+        <button
+          onClick={(e) => {
+            e.preventDefault(); 
+          }}
+          className="absolute top-5 right-5 z-20 bg-white/30 backdrop-blur-md border border-white/20 text-white hover:bg-white hover:text-red-500 p-3 rounded-full transition-all duration-300 shadow-lg group-hover:scale-110"
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -42,7 +50,7 @@ const PropertyCard = ({ property }) => {
             {property.price}
           </h4>
         </div>
-      </div>
+      </Link>
 
       <div className="relative z-10 -mt-20 mx-4 p-6 bg-white/80 backdrop-blur-xl border-t border-l border-r border-white/60 rounded-t-3xl rounded-b-3xl shadow-[0_-10px_30px_-15px_rgba(0,0,0,0.3)] transition-all duration-500 group-hover:bg-white/95">
         <div className="mb-6">
@@ -68,46 +76,18 @@ const PropertyCard = ({ property }) => {
 
         <div className="flex items-center justify-between py-4 border-t border-brand-navy/10 border-b mb-4">
           <div className="flex items-center flex-col md:flex-row">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              className="w-5 h-5 text-brand-gold md:mr-2 mb-1 md:mb-0"
-            >
-              <path
-                fillRule="evenodd"
-                d="M1.5 8.25a.75.75 0 01.75-.75c.961 0 1.864.19 2.707.532a.75.75 0 01-.548 1.398 3.768 3.768 0 00-1.409-.28H2.25v7.875c0 .414.336.75.75.75h18a.75.75 0 00.75-.75V9.15c-1.204.31-2.516.35-3.75.112a.75.75 0 11.296-1.47c.996.192 2.03.207 3.033.046.397-.064.69-.435.622-.836a.75.75 0 00-.728-.652h-3.01a.75.75 0 00-.75.75v1.5h-9v-1.5a.75.75 0 00-.75-.75H3.75a.75.75 0 00-.622.836c.064.401.357.772.754.836.993.159 2.015.15 3.008-.046a.75.75 0 01.297 1.47c-1.242.239-2.558.199-3.768-.112V17.25h.75a.75.75 0 01.75.75v3a.75.75 0 01-.75.75h-3a.75.75 0 01-.75-.75v-3a.75.75 0 01.75-.75h.75V8.25z"
-                clipRule="evenodd"
-              />
-            </svg>
             <span className="text-sm font-bold text-brand-navy">
               {property.beds}{" "}
               <span className="font-medium text-brand-navy/60">Beds</span>
             </span>
           </div>
           <div className="flex items-center flex-col md:flex-row">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              className="w-5 h-5 text-brand-gold md:mr-2 mb-1 md:mb-0"
-            >
-              <path d="M12.378 1.602a.75.75 0 00-.756 0C7.26 4.28 4.095 7.565 4.095 11.505c0 3.315 2.256 6.145 5.253 7.16.294.098.605.15.923.15H12v3.375a.75.75 0 001.5 0V18.823c.287-.017.571-.066.85-.145 3.369-1.108 5.763-4.162 5.763-7.65 0-3.94-3.165-7.225-7.735-9.903zM12 17.25c-3.176 0-5.75-2.574-5.75-5.75 0-2.727 1.945-5.013 4.475-5.622a.75.75 0 00.525-.728V2.342c2.941 1.989 4.5 4.392 4.5 7.333 0 3.176-2.574 5.75-5.75 5.75z" />
-            </svg>
             <span className="text-sm font-bold text-brand-navy">
               {property.baths}{" "}
               <span className="font-medium text-brand-navy/60">Baths</span>
             </span>
           </div>
           <div className="flex items-center flex-col md:flex-row">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              className="w-5 h-5 text-brand-gold md:mr-2 mb-1 md:mb-0"
-            >
-              <path d="M18.375 2.25c-1.035 0-1.875.84-1.875 1.875v15.75c0 1.035.84 1.875 1.875 1.875h.75c1.035 0 1.875-.84 1.875-1.875V4.125c0-1.035-.84-1.875-1.875-1.875h-.75zM9.75 2.25c-1.035 0-1.875.84-1.875 1.875v15.75c0 1.035.84 1.875 1.875 1.875h.75c1.035 0 1.875-.84 1.875-1.875V4.125c0-1.035-.84-1.875-1.875-1.875h-.75zM2.25 2.25c-1.035 0-1.875.84-1.875 1.875v15.75c0 1.035.84 1.875 1.875 1.875h.75c1.035 0 1.875-.84 1.875-1.875V4.125c0-1.035-.84-1.875-1.875-1.875h-.75z" />
-            </svg>
             <span className="text-sm font-bold text-brand-navy">
               {property.sqft}{" "}
               <span className="font-medium text-brand-navy/60">sqft</span>
@@ -128,14 +108,15 @@ const PropertyCard = ({ property }) => {
               <span className="text-xs font-bold text-brand-navy block">
                 Sarah Jenkins
               </span>
-              <span className="text-[10px] text-brand-navy/60 uppercase tracking-wider">
-                Premier Agent
-              </span>
             </div>
           </div>
-          <span className="text-xs text-brand-gold font-bold uppercase tracking-widest hover:text-brand-navy transition-colors cursor-pointer border-b-2 border-transparent hover:border-brand-gold py-1">
+
+          <Link
+            to={`/properties/${property.id}`}
+            className="text-xs text-brand-gold font-bold uppercase tracking-widest hover:text-brand-navy transition-colors cursor-pointer border-b-2 border-transparent hover:border-brand-gold py-1"
+          >
             View Details
-          </span>
+          </Link>
         </div>
       </div>
     </div>

@@ -5,6 +5,7 @@ import ClientLayout from "./layouts/ClientLayout";
 
 // Pages
 import Home from "./pages/public/Home";
+import PropertyDetails from "./pages/public/PropertyDetails";
 
 function App() {
   return (
@@ -14,6 +15,8 @@ function App() {
         <Route path="/" element={<ClientLayout />}>
           <Route index element={<Home />} />
           {/* Future routes like Properties, Contact will go here */}
+
+          <Route path="properties/:id" element={<PropertyDetails />} />
         </Route>
 
         {/* ADMIN ROUTES (Dashboard) - We will build this next */}
