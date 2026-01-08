@@ -1,9 +1,13 @@
 import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { properties } from "../../data/mockData";
 import PropertyCard from "../../components/public/PropertyCard";
 
 const Properties = () => {
-  const [filterLocation, setFilterLocation] = useState("All");
+  const { state } = useLocation();
+  const [filterLocation, setFilterLocation] = useState(
+    state?.filterLocation || "All"
+  );
   const [filterType, setFilterType] = useState("All");
   const [filterStatus, setFilterStatus] = useState("All");
   const [priceRange, setPriceRange] = useState({ min: 0, max: 500000000 });

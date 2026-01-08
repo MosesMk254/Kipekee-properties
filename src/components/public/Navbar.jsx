@@ -40,8 +40,12 @@ const Navbar = () => {
       >
         <div className="container mx-auto px-6 flex justify-between items-center">
           <div className="text-2xl font-heading font-bold text-white tracking-wide z-50 relative">
-            <Link to="/">
-              Kipekee<span className="text-brand-gold">.</span>
+            <Link to="/" className="block">
+              <img
+                src="/logo.png"
+                alt="Kipekee Properties"
+                className="h-10 md:h-12 w-auto object-contain transform scale-[1.8] origin-left ml-2"
+              />
             </Link>
           </div>
 
@@ -123,9 +127,11 @@ const Navbar = () => {
               )}
 
               <div className="pt-8">
-                <button className="bg-brand-gold text-white px-8 py-4 rounded-sm font-bold uppercase text-sm tracking-widest">
-                  List Your Property
-                </button>
+                <Link to="/contact">
+                  <button className="bg-brand-gold text-white px-8 py-4 rounded-sm font-bold uppercase text-sm tracking-widest">
+                    Talk to an Agent
+                  </button>
+                </Link>
               </div>
             </div>
           </motion.div>

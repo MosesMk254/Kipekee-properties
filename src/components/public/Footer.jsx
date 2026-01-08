@@ -9,8 +9,13 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
           <div>
             <div className="text-3xl font-heading font-bold text-white mb-6">
-              Kipekee<span className="text-brand-gold">.</span>
+              <img
+                src="/logo.png"
+                alt="Kipekee Properties"
+                className="h-16 w-auto object-contain transform scale-150 origin-left"
+              />
             </div>
+
             <p className="text-gray-400 text-sm leading-relaxed mb-8">
               Connecting discerning clients with exclusive properties in
               Nairobi's most sought-after neighborhoods.

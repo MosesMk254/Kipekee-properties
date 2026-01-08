@@ -7,6 +7,7 @@ import LocationGrid from "../../components/public/LocationGrid";
 import Testimonials from "../../components/public/Testimonials";
 import ContactSection from "../../components/public/ContactSection";
 import { properties } from "../../data/mockData";
+import { Link } from "react-router-dom";
 
 const Home = () => {
   const featuredProperties = properties.slice(0, 3);
@@ -49,9 +50,11 @@ const Home = () => {
           </div>
 
           <div className="text-center mt-20">
-            <button className="bg-brand-navy text-white px-12 py-5 font-bold uppercase text-sm tracking-widest rounded-sm hover:bg-brand-gold transition-colors duration-300">
-              View All Properties
-            </button>
+            <Link to="/properties">
+              <button className="bg-brand-navy text-white px-12 py-5 font-bold uppercase text-sm tracking-widest rounded-sm hover:bg-brand-gold transition-colors duration-300">
+                View All Properties
+              </button>
+            </Link>
           </div>
         </div>
       </section>
