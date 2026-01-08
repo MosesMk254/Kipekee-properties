@@ -61,18 +61,47 @@ const Properties = () => {
   return (
     <div className="bg-brand-gray min-h-screen pt-32 pb-20">
       <div className="container mx-auto px-6">
-        <div className="text-center mb-16 animate-fade-in-up">
+        <div className="text-center mb-10 md:mb-16 animate-fade-in-up">
           <h5 className="text-brand-gold font-bold tracking-widest uppercase mb-2 text-sm">
             Portfolio
           </h5>
-          <h1 className="text-4xl font-heading font-bold text-brand-navy">
+          <h1 className="text-3xl md:text-4xl font-heading font-bold text-brand-navy">
             Exclusive Listings
           </h1>
           <div className="w-24 h-1 bg-brand-gold mx-auto mt-6 rounded-full"></div>
         </div>
 
         <div className="flex flex-col lg:flex-row gap-12 relative">
-          <div className="w-full lg:w-1/3">
+          <div className="lg:hidden mb-4">
+            <button
+              onClick={() =>
+                document
+                  .getElementById("mobile-filters")
+                  .classList.toggle("hidden")
+              }
+              className="w-full bg-white border border-brand-navy text-brand-navy font-bold py-3 rounded flex justify-center items-center shadow-sm"
+            >
+              <svg
+                className="w-5 h-5 mr-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
+                ></path>
+              </svg>
+              Show/Hide Filters
+            </button>
+          </div>
+
+          <div
+            id="mobile-filters"
+            className="hidden lg:block w-full lg:w-1/3 transition-all duration-300"
+          >
             <div className="sticky top-32 bg-white rounded-2xl shadow-xl p-8 border border-gray-100 max-h-[calc(100vh-140px)] overflow-y-auto custom-scrollbar">
               <div className="flex justify-between items-center mb-8 border-b border-gray-100 pb-4">
                 <h3 className="text-xl font-heading font-bold text-brand-navy">

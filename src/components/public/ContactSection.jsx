@@ -3,7 +3,7 @@ const ContactSection = () => {
     <section className="bg-white py-24">
       <div className="container mx-auto px-6">
         <div className="flex flex-col md:flex-row bg-white shadow-2xl rounded-3xl overflow-hidden">
-          <div className="md:w-1/2 relative min-h-[400px] md:min-h-[600px]">
+          <div className="md:w-1/2 relative min-h-[250px] md:min-h-[600px]">
             <img
               src="https://images.unsplash.com/photo-1600607687644-c7171b42498f?q=80&w=800&auto=format&fit=crop"
               alt="Luxury Real Estate Contact"
