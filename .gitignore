@@ -25,4 +25,4 @@ dist-ssr
 
 instance/
 *.db
-*.sqlite3
+*.sqlite3kipekee-frontend/node_modules/
