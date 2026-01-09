@@ -7,6 +7,7 @@ import LocationGrid from "../../components/public/LocationGrid";
 import Testimonials from "../../components/public/Testimonials";
 import ContactSection from "../../components/public/ContactSection";
 import { Link } from "react-router-dom";
+import WhatsAppFloat from "../../components/public/WhatsAppFloat";
 
 const Home = () => {
   return (

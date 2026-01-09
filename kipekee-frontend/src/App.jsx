@@ -3,6 +3,9 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 // Layouts
 import ClientLayout from "./layouts/ClientLayout";
 
+// Components
+import WhatsAppFloat from "./components/public/WhatsAppFloat";
+
 // Pages
 import Home from "./pages/public/Home";
 import PropertyDetails from "./pages/public/PropertyDetails";
@@ -17,11 +20,12 @@ import Dashboard from "./pages/admin/Dashboard";
 function App() {
   return (
     <BrowserRouter>
+      <WhatsAppFloat />
+
       <Routes>
         {/* PUBLIC ROUTES (Client Side) */}
         <Route path="/" element={<ClientLayout />}>
           <Route index element={<Home />} />
-          {/* Future routes like Properties, Contact will go here */}
           <Route path="about" element={<About />} />
           <Route path="properties" element={<Properties />} />
           <Route path="contact" element={<Contact />} />
@@ -31,10 +35,9 @@ function App() {
           <Route path="blog/:id" element={<BlogDetails />} />
         </Route>
 
-        {/* ADMIN ROUTES (Dashboard) - We will build this next */}
+        {/* ADMIN ROUTES (Dashboard) */}
         <Route path="/login" element={<Login />} />
         <Route path="/admin/dashboard" element={<Dashboard />} />
-        {/* <Route path="/admin" element={<AdminLayout />}> ... </Route> */}
       </Routes>
     </BrowserRouter>
   );
