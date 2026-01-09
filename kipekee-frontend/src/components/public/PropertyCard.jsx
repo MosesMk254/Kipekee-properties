@@ -1,6 +1,36 @@
 import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
 
 const PropertyCard = ({ property }) => {
+  const [isLiked, setIsLiked] = useState(false);
+
+  useEffect(() => {
+    const savedLikes = JSON.parse(
+      localStorage.getItem("kipekee_likes") || "[]"
+    );
+    if (savedLikes.includes(property.id)) {
+      setIsLiked(true);
+    }
+  }, [property.id]);
+
+  const toggleLike = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const savedLikes = JSON.parse(
+      localStorage.getItem("kipekee_likes") || "[]"
+    );
+    let newLikes;
+    if (isLiked) {
+      newLikes = savedLikes.filter((id) => id !== property.id);
+    } else {
+      newLikes = [...savedLikes, property.id];
+    }
+
+    localStorage.setItem("kipekee_likes", JSON.stringify(newLikes));
+    setIsLiked(!isLiked);
+  };
+
   return (
     <div className="group relative rounded-3xl overflow-hidden transition-all duration-500 hover:-translate-y-3 hover:shadow-2xl bg-white">
       <Link
@@ -8,7 +38,7 @@ const PropertyCard = ({ property }) => {
         className="block relative h-[340px] overflow-hidden"
       >
         <img
-          src={property.image}
+          src={property.images ? property.images[0] : property.image_url}
           alt={property.title}
           className="w-full h-full object-cover transition-transform duration-[2000ms] group-hover:scale-110"
         />
@@ -24,14 +54,16 @@ const PropertyCard = ({ property }) => {
         </div>
 
         <button
-          onClick={(e) => {
-            e.preventDefault(); 
-          }}
-          className="absolute top-5 right-5 z-20 bg-white/30 backdrop-blur-md border border-white/20 text-white hover:bg-white hover:text-red-500 p-3 rounded-full transition-all duration-300 shadow-lg group-hover:scale-110"
+          onClick={toggleLike}
+          className={`absolute top-5 right-5 z-20 bg-white/30 backdrop-blur-md border border-white/20 p-3 rounded-full transition-all duration-300 shadow-lg group-hover:scale-110 ${
+            isLiked
+              ? "bg-white text-red-500"
+              : "text-white hover:bg-white hover:text-red-500"
+          }`}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            fill="none"
+            fill={isLiked ? "currentColor" : "none"}
             viewBox="0 0 24 24"
             strokeWidth={2}
             stroke="currentColor"

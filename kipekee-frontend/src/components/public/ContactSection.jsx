@@ -1,4 +1,47 @@
+import { useState } from "react";
+import axios from "axios";
+
 const ContactSection = () => {
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    message: "",
+  });
+  const [status, setStatus] = useState("");
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setStatus("sending");
+
+    const payload = {
+      name: `${formData.firstName} ${formData.lastName}`,
+      email: formData.email,
+      phone: formData.phone,
+      message: formData.message,
+    };
+
+    try {
+      await axios.post("http://127.0.0.1:5000/api/inquiries", payload);
+      setStatus("success");
+      setFormData({
+        firstName: "",
+        lastName: "",
+        email: "",
+        phone: "",
+        message: "",
+      });
+    } catch (err) {
+      console.error(err);
+      setStatus("error");
+    }
+  };
+
   return (
     <section className="bg-white py-24">
       <div className="container mx-auto px-6">
@@ -38,7 +81,6 @@ const ContactSection = () => {
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
                       strokeLinecap="round"
@@ -55,7 +97,6 @@ const ContactSection = () => {
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
                       strokeLinecap="round"
@@ -69,80 +110,148 @@ const ContactSection = () => {
               </div>
             </div>
 
-            <form className="space-y-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {status === "success" ? (
+              <div className="bg-green-50 border border-green-100 rounded-lg p-8 text-center animate-fade-in">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg
+                    className="w-8 h-8 text-green-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M5 13l4 4L19 7"
+                    ></path>
+                  </svg>
+                </div>
+                <h3 className="text-xl font-bold text-brand-navy mb-2">
+                  Message Sent
+                </h3>
+                <p className="text-gray-500 mb-6">
+                  We will get back to you shortly.
+                </p>
+                <button
+                  onClick={() => setStatus("")}
+                  className="text-brand-gold font-bold uppercase text-xs tracking-widest hover:underline"
+                >
+                  Send Another
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="relative z-0 w-full group">
+                    <input
+                      type="text"
+                      name="firstName"
+                      id="floating_first_name"
+                      value={formData.firstName}
+                      onChange={handleChange}
+                      className="block py-2.5 px-0 w-full text-sm text-brand-dark bg-transparent border-0 border-b-2 border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-brand-navy peer"
+                      placeholder=" "
+                      required
+                    />
+                    <label
+                      htmlFor="floating_first_name"
+                      className="peer-focus:font-medium absolute text-sm text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-brand-navy peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
+                    >
+                      First Name
+                    </label>
+                  </div>
+                  <div className="relative z-0 w-full group">
+                    <input
+                      type="text"
+                      name="lastName"
+                      id="floating_last_name"
+                      value={formData.lastName}
+                      onChange={handleChange}
+                      className="block py-2.5 px-0 w-full text-sm text-brand-dark bg-transparent border-0 border-b-2 border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-brand-navy peer"
+                      placeholder=" "
+                      required
+                    />
+                    <label
+                      htmlFor="floating_last_name"
+                      className="peer-focus:font-medium absolute text-sm text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-brand-navy peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
+                    >
+                      Last Name
+                    </label>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="relative z-0 w-full group">
+                    <input
+                      type="email"
+                      name="email"
+                      id="floating_email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      className="block py-2.5 px-0 w-full text-sm text-brand-dark bg-transparent border-0 border-b-2 border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-brand-navy peer"
+                      placeholder=" "
+                      required
+                    />
+                    <label
+                      htmlFor="floating_email"
+                      className="peer-focus:font-medium absolute text-sm text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-brand-navy peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
+                    >
+                      Email address
+                    </label>
+                  </div>
+                  <div className="relative z-0 w-full group">
+                    <input
+                      type="tel"
+                      name="phone"
+                      id="floating_phone"
+                      value={formData.phone}
+                      onChange={handleChange}
+                      className="block py-2.5 px-0 w-full text-sm text-brand-dark bg-transparent border-0 border-b-2 border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-brand-navy peer"
+                      placeholder=" "
+                      required
+                    />
+                    <label
+                      htmlFor="floating_phone"
+                      className="peer-focus:font-medium absolute text-sm text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-brand-navy peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
+                    >
+                      Phone Number
+                    </label>
+                  </div>
+                </div>
+
                 <div className="relative z-0 w-full group">
-                  <input
-                    type="text"
-                    name="floating_first_name"
-                    id="floating_first_name"
-                    className="block py-2.5 px-0 w-full text-sm text-brand-dark bg-transparent border-0 border-b-2 border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-brand-navy peer"
+                  <textarea
+                    rows="4"
+                    name="message"
+                    id="floating_message"
+                    value={formData.message}
+                    onChange={handleChange}
+                    className="block py-2.5 px-0 w-full text-sm text-brand-dark bg-transparent border-0 border-b-2 border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-brand-navy peer resize-none"
                     placeholder=" "
                     required
-                  />
+                  ></textarea>
                   <label
-                    htmlFor="floating_first_name"
+                    htmlFor="floating_message"
                     className="peer-focus:font-medium absolute text-sm text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-brand-navy peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
                   >
-                    First Name
+                    Your Message
                   </label>
                 </div>
-                <div className="relative z-0 w-full group">
-                  <input
-                    type="text"
-                    name="floating_last_name"
-                    id="floating_last_name"
-                    className="block py-2.5 px-0 w-full text-sm text-brand-dark bg-transparent border-0 border-b-2 border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-brand-navy peer"
-                    placeholder=" "
-                    required
-                  />
-                  <label
-                    htmlFor="floating_last_name"
-                    className="peer-focus:font-medium absolute text-sm text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-brand-navy peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-                  >
-                    Last Name
-                  </label>
-                </div>
-              </div>
 
-              <div className="relative z-0 w-full group">
-                <input
-                  type="email"
-                  name="floating_email"
-                  id="floating_email"
-                  className="block py-2.5 px-0 w-full text-sm text-brand-dark bg-transparent border-0 border-b-2 border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-brand-navy peer"
-                  placeholder=" "
-                  required
-                />
-                <label
-                  htmlFor="floating_email"
-                  className="peer-focus:font-medium absolute text-sm text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-brand-navy peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
+                <button
+                  disabled={status === "sending"}
+                  className="bg-brand-navy text-white px-10 py-4 font-bold uppercase text-sm tracking-widest hover:bg-brand-gold transition-colors duration-300 rounded-sm w-full md:w-auto disabled:opacity-70"
                 >
-                  Email address
-                </label>
-              </div>
-
-              <div className="relative z-0 w-full group">
-                <textarea
-                  rows="4"
-                  name="floating_message"
-                  id="floating_message"
-                  className="block py-2.5 px-0 w-full text-sm text-brand-dark bg-transparent border-0 border-b-2 border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-brand-navy peer resize-none"
-                  placeholder=" "
-                  required
-                ></textarea>
-                <label
-                  htmlFor="floating_message"
-                  className="peer-focus:font-medium absolute text-sm text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-brand-navy peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
-                >
-                  Your Message
-                </label>
-              </div>
-
-              <button className="bg-brand-navy text-white px-10 py-4 font-bold uppercase text-sm tracking-widest hover:bg-brand-gold transition-colors duration-300 rounded-sm w-full md:w-auto">
-                Send Message
-              </button>
-            </form>
+                  {status === "sending" ? "Sending..." : "Send Message"}
+                </button>
+                {status === "error" && (
+                  <p className="text-red-500 text-sm mt-2 font-bold">
+                    Failed to send message. Please try again.
+                  </p>
+                )}
+              </form>
+            )}
           </div>
         </div>
       </div>

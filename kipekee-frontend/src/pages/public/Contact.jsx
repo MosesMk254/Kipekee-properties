@@ -1,10 +1,53 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import axios from "axios";
 
 const Contact = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    subject: "General Inquiry",
+    message: "",
+  });
+  const [status, setStatus] = useState("");
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setStatus("sending");
+
+    const payload = {
+      name: `${formData.firstName} ${formData.lastName}`,
+      email: formData.email,
+      phone: formData.phone,
+      message: `Subject: ${formData.subject}\n\n${formData.message}`,
+    };
+
+    try {
+      await axios.post("http://127.0.0.1:5000/api/inquiries", payload);
+      setStatus("success");
+      setFormData({
+        firstName: "",
+        lastName: "",
+        email: "",
+        phone: "",
+        subject: "General Inquiry",
+        message: "",
+      });
+    } catch (err) {
+      console.error(err);
+      setStatus("error");
+    }
+  };
 
   const contactInfo = [
     {
@@ -133,64 +176,141 @@ const Contact = () => {
             <h3 className="text-2xl font-bold text-brand-navy mb-8">
               Send a Message
             </h3>
-            <form className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            {status === "success" ? (
+              <div className="h-full flex flex-col justify-center items-center text-center animate-fade-in">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-6">
+                  <svg
+                    className="w-8 h-8 text-green-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M5 13l4 4L19 7"
+                    ></path>
+                  </svg>
+                </div>
+                <h3 className="text-xl font-bold text-brand-navy mb-2">
+                  Message Sent!
+                </h3>
+                <p className="text-gray-500 mb-6">
+                  We will get back to you shortly.
+                </p>
+                <button
+                  onClick={() => setStatus("")}
+                  className="text-brand-gold font-bold underline text-sm uppercase tracking-wider"
+                >
+                  Send Another
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="group">
+                    <label className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2 block">
+                      First Name
+                    </label>
+                    <input
+                      type="text"
+                      name="firstName"
+                      required
+                      value={formData.firstName}
+                      onChange={handleChange}
+                      className="w-full bg-gray-50 border border-gray-200 rounded p-3 text-sm focus:border-brand-navy focus:ring-1 focus:ring-brand-navy outline-none transition-all"
+                    />
+                  </div>
+                  <div className="group">
+                    <label className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2 block">
+                      Last Name
+                    </label>
+                    <input
+                      type="text"
+                      name="lastName"
+                      required
+                      value={formData.lastName}
+                      onChange={handleChange}
+                      className="w-full bg-gray-50 border border-gray-200 rounded p-3 text-sm focus:border-brand-navy focus:ring-1 focus:ring-brand-navy outline-none transition-all"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="group">
+                    <label className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2 block">
+                      Email Address
+                    </label>
+                    <input
+                      type="email"
+                      name="email"
+                      required
+                      value={formData.email}
+                      onChange={handleChange}
+                      className="w-full bg-gray-50 border border-gray-200 rounded p-3 text-sm focus:border-brand-navy focus:ring-1 focus:ring-brand-navy outline-none transition-all"
+                    />
+                  </div>
+                  <div className="group">
+                    <label className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2 block">
+                      Phone Number
+                    </label>
+                    <input
+                      type="tel"
+                      name="phone"
+                      required
+                      value={formData.phone}
+                      onChange={handleChange}
+                      className="w-full bg-gray-50 border border-gray-200 rounded p-3 text-sm focus:border-brand-navy focus:ring-1 focus:ring-brand-navy outline-none transition-all"
+                    />
+                  </div>
+                </div>
+
                 <div className="group">
                   <label className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2 block">
-                    First Name
+                    Subject
                   </label>
-                  <input
-                    type="text"
+                  <select
+                    name="subject"
+                    value={formData.subject}
+                    onChange={handleChange}
                     className="w-full bg-gray-50 border border-gray-200 rounded p-3 text-sm focus:border-brand-navy focus:ring-1 focus:ring-brand-navy outline-none transition-all"
-                  />
+                  >
+                    <option>General Inquiry</option>
+                    <option>Buying a Property</option>
+                    <option>Selling a Property</option>
+                    <option>Partnership</option>
+                  </select>
                 </div>
+
                 <div className="group">
                   <label className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2 block">
-                    Last Name
+                    Message
                   </label>
-                  <input
-                    type="text"
-                    className="w-full bg-gray-50 border border-gray-200 rounded p-3 text-sm focus:border-brand-navy focus:ring-1 focus:ring-brand-navy outline-none transition-all"
-                  />
+                  <textarea
+                    name="message"
+                    rows="4"
+                    required
+                    value={formData.message}
+                    onChange={handleChange}
+                    className="w-full bg-gray-50 border border-gray-200 rounded p-3 text-sm focus:border-brand-navy focus:ring-1 focus:ring-brand-navy outline-none transition-all resize-none"
+                  ></textarea>
                 </div>
-              </div>
 
-              <div className="group">
-                <label className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2 block">
-                  Email Address
-                </label>
-                <input
-                  type="email"
-                  className="w-full bg-gray-50 border border-gray-200 rounded p-3 text-sm focus:border-brand-navy focus:ring-1 focus:ring-brand-navy outline-none transition-all"
-                />
-              </div>
-
-              <div className="group">
-                <label className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2 block">
-                  Subject
-                </label>
-                <select className="w-full bg-gray-50 border border-gray-200 rounded p-3 text-sm focus:border-brand-navy focus:ring-1 focus:ring-brand-navy outline-none transition-all">
-                  <option>General Inquiry</option>
-                  <option>Buying a Property</option>
-                  <option>Selling a Property</option>
-                  <option>Partnership</option>
-                </select>
-              </div>
-
-              <div className="group">
-                <label className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2 block">
-                  Message
-                </label>
-                <textarea
-                  rows="4"
-                  className="w-full bg-gray-50 border border-gray-200 rounded p-3 text-sm focus:border-brand-navy focus:ring-1 focus:ring-brand-navy outline-none transition-all resize-none"
-                ></textarea>
-              </div>
-
-              <button className="w-full bg-brand-navy text-white font-bold py-4 rounded shadow-lg hover:bg-brand-gold transition-colors uppercase text-xs tracking-widest">
-                Submit Request
-              </button>
-            </form>
+                <button
+                  disabled={status === "sending"}
+                  className="w-full bg-brand-navy text-white font-bold py-4 rounded shadow-lg hover:bg-brand-gold transition-colors uppercase text-xs tracking-widest disabled:opacity-70"
+                >
+                  {status === "sending" ? "Sending..." : "Submit Request"}
+                </button>
+                {status === "error" && (
+                  <p className="text-red-500 text-xs text-center font-bold mt-2">
+                    Failed to send message. Please try again.
+                  </p>
+                )}
+              </form>
+            )}
           </div>
         </div>
       </div>
@@ -205,7 +325,6 @@ const Contact = () => {
           loading="lazy"
           referrerPolicy="no-referrer-when-downgrade"
         ></iframe>
-
         <div className="absolute top-10 left-10 bg-white p-6 rounded-xl shadow-2xl max-w-xs hidden md:block">
           <h4 className="font-bold text-brand-navy text-lg mb-2">Kipekee HQ</h4>
           <p className="text-sm text-gray-500 mb-4">

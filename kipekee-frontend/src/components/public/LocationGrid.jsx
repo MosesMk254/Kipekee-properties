@@ -1,8 +1,26 @@
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { properties } from "../../data/mockData";
+import axios from "axios";
 
 const LocationGrid = () => {
+  const [properties, setProperties] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProperties = async () => {
+      try {
+        const res = await axios.get("http://127.0.0.1:5000/api/properties");
+        setProperties(res.data);
+        setLoading(false);
+      } catch (err) {
+        console.error("Error fetching location counts:", err);
+        setLoading(false);
+      }
+    };
+    fetchProperties();
+  }, []);
+
   const neighborhoods = [
     {
       name: "Karen",
@@ -26,6 +44,8 @@ const LocationGrid = () => {
     },
   ];
 
+  if (loading) return null;
+
   return (
     <section className="py-24 bg-brand-gray">
       <div className="container mx-auto px-6">
@@ -38,8 +58,8 @@ const LocationGrid = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {neighborhoods.map((loc, index) => {
-            const count = properties.filter((p) =>
-              p.location.includes(loc.name)
+            const count = properties.filter(
+              (p) => p.location && p.location.includes(loc.name)
             ).length;
 
             return (
@@ -67,7 +87,7 @@ const LocationGrid = () => {
                     <h3 className="text-xl font-heading font-bold text-white group-hover:text-brand-gold transition-colors">
                       {loc.name}
                     </h3>
-                    <p className="text-gray-300 text-sm">
+                    <p className="text-gray-300 text-sm font-medium">
                       {count} {count === 1 ? "Property" : "Properties"}
                     </p>
                   </div>
