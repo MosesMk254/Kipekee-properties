@@ -1,10 +1,15 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { properties } from "../../data/mockData";
+import axios from "axios";
 import PropertyCard from "../../components/public/PropertyCard";
 
 const Properties = () => {
   const { state } = useLocation();
+
+  const [properties, setProperties] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   const [filterLocation, setFilterLocation] = useState(
     state?.filterLocation || "All"
   );
@@ -13,11 +18,32 @@ const Properties = () => {
   const [priceRange, setPriceRange] = useState({ min: 0, max: 500000000 });
   const [searchQuery, setSearchQuery] = useState("");
 
-  const [filteredProperties, setFilteredProperties] = useState(properties);
+  const [filteredProperties, setFilteredProperties] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
 
   useEffect(() => {
+    const fetchProperties = async () => {
+      try {
+        const response = await axios.get(
+          "http://127.0.0.1:5000/api/properties"
+        );
+        setProperties(response.data);
+        setFilteredProperties(response.data);
+        setLoading(false);
+      } catch (err) {
+        console.error("Error fetching data:", err);
+        setError("Failed to load properties. Please try again later.");
+        setLoading(false);
+      }
+    };
+
+    fetchProperties();
+  }, []);
+
+  useEffect(() => {
+    if (properties.length === 0) return;
+
     let result = properties;
 
     if (searchQuery) {
@@ -29,13 +55,17 @@ const Properties = () => {
       result = result.filter((p) => p.location.includes(filterLocation));
     }
     if (filterType !== "All") {
-      result = result.filter((p) => p.specs.type === filterType);
+      result = result.filter((p) => p.type === filterType);
     }
     if (filterStatus !== "All") {
       result = result.filter((p) => p.status === filterStatus);
     }
 
-    const cleanPrice = (priceStr) => parseInt(priceStr.replace(/[^0-9]/g, ""));
+    const cleanPrice = (priceStr) => {
+      if (!priceStr) return 0;
+      return parseInt(priceStr.replace(/[^0-9]/g, ""));
+    };
+
     result = result.filter((p) => {
       const price = cleanPrice(p.price);
       return (
@@ -46,7 +76,14 @@ const Properties = () => {
 
     setFilteredProperties(result);
     setCurrentPage(1);
-  }, [filterLocation, filterType, filterStatus, priceRange, searchQuery]);
+  }, [
+    filterLocation,
+    filterType,
+    filterStatus,
+    priceRange,
+    searchQuery,
+    properties,
+  ]);
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -58,9 +95,29 @@ const Properties = () => {
 
   const locations = [
     "All",
-    ...new Set(properties.map((p) => p.location.split(", ")[0])),
-  ];
-  const types = ["All", ...new Set(properties.map((p) => p.specs.type))];
+    ...new Set(
+      properties.map((p) => (p.location ? p.location.split(", ")[0] : ""))
+    ),
+  ].filter((l) => l);
+  const types = ["All", ...new Set(properties.map((p) => p.type))].filter(
+    (t) => t
+  );
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex justify-center items-center bg-brand-gray">
+        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-brand-navy"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex justify-center items-center text-red-500 font-bold">
+        {error}
+      </div>
+    );
+  }
 
   return (
     <div className="bg-brand-gray min-h-screen pt-32 pb-20">
@@ -85,19 +142,6 @@ const Properties = () => {
               }
               className="w-full bg-white border border-brand-navy text-brand-navy font-bold py-3 rounded flex justify-center items-center shadow-sm"
             >
-              <svg
-                className="w-5 h-5 mr-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
-                ></path>
-              </svg>
               Show/Hide Filters
             </button>
           </div>
@@ -129,28 +173,13 @@ const Properties = () => {
                 <label className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3 block">
                   Keyword Search
                 </label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    placeholder="e.g. Pool, Garden..."
-                    className="w-full bg-gray-50 border border-gray-200 rounded p-3 pl-10 text-sm focus:border-brand-navy focus:ring-1 focus:ring-brand-navy outline-none transition-all"
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    value={searchQuery}
-                  />
-                  <svg
-                    className="w-4 h-4 text-gray-400 absolute left-3 top-3.5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                    ></path>
-                  </svg>
-                </div>
+                <input
+                  type="text"
+                  placeholder="e.g. Villa..."
+                  className="w-full bg-gray-50 border border-gray-200 rounded p-3 text-sm"
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  value={searchQuery}
+                />
               </div>
 
               <div className="mb-8">
@@ -162,7 +191,7 @@ const Properties = () => {
                     <button
                       key={status}
                       onClick={() => setFilterStatus(status)}
-                      className={`flex-1 py-2 text-xs font-bold rounded transition-all ${
+                      className={`flex-1 py-2 text-xs font-bold rounded ${
                         filterStatus === status
                           ? "bg-white text-brand-navy shadow-sm"
                           : "text-gray-500 hover:text-brand-navy"
@@ -179,7 +208,7 @@ const Properties = () => {
                   Location
                 </label>
                 <select
-                  className="w-full bg-gray-50 border border-gray-200 rounded p-3 text-sm focus:border-brand-navy outline-none cursor-pointer"
+                  className="w-full bg-gray-50 border border-gray-200 rounded p-3 text-sm outline-none"
                   onChange={(e) => setFilterLocation(e.target.value)}
                   value={filterLocation}
                 >
@@ -196,7 +225,7 @@ const Properties = () => {
                   Property Type
                 </label>
                 <select
-                  className="w-full bg-gray-50 border border-gray-200 rounded p-3 text-sm focus:border-brand-navy outline-none cursor-pointer"
+                  className="w-full bg-gray-50 border border-gray-200 rounded p-3 text-sm outline-none"
                   onChange={(e) => setFilterType(e.target.value)}
                   value={filterType}
                 >
@@ -212,128 +241,60 @@ const Properties = () => {
                 <label className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3 block">
                   Max Price
                 </label>
-                <div className="relative">
-                  <span className="absolute left-3 top-3 text-gray-400 text-sm">
-                    KES
-                  </span>
-                  <input
-                    type="number"
-                    placeholder="No Limit"
-                    className="w-full bg-gray-50 border border-gray-200 rounded p-3 pl-12 text-sm focus:border-brand-navy outline-none transition-colors"
-                    onChange={(e) =>
-                      setPriceRange({
-                        ...priceRange,
-                        max: e.target.value || 500000000,
-                      })
-                    }
-                  />
-                </div>
+                <input
+                  type="number"
+                  placeholder="No Limit"
+                  className="w-full bg-gray-50 border border-gray-200 rounded p-3 text-sm"
+                  onChange={(e) =>
+                    setPriceRange({
+                      ...priceRange,
+                      max: e.target.value || 500000000,
+                    })
+                  }
+                />
               </div>
             </div>
           </div>
 
           <div className="w-full lg:w-2/3">
-            <div className="mb-8 flex flex-col sm:flex-row justify-between items-center bg-white p-4 rounded-lg border border-gray-100 shadow-sm">
-              <span className="text-brand-navy text-sm font-medium mb-2 sm:mb-0">
+            <div className="mb-8 flex justify-between items-center bg-white p-4 rounded-lg border border-gray-100 shadow-sm">
+              <span className="text-brand-navy text-sm font-medium">
                 Found <strong>{filteredProperties.length}</strong> Properties
               </span>
-              <div className="flex items-center gap-3">
-                <span className="text-xs font-bold text-gray-400 uppercase">
-                  Sort:
-                </span>
-                <select className="bg-gray-50 border border-gray-200 rounded px-3 py-1 text-sm text-brand-navy outline-none cursor-pointer hover:border-brand-navy transition-colors">
-                  <option>Newest Listed</option>
-                  <option>Price: Low to High</option>
-                  <option>Price: High to Low</option>
-                </select>
-              </div>
             </div>
 
             {currentItems.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                 {currentItems.map((prop) => (
-                  <PropertyCard key={prop.id} property={prop} />
+                  <PropertyCard
+                    key={prop.id}
+                    property={{ ...prop, image: prop.image_url }}
+                  />
                 ))}
               </div>
             ) : (
               <div className="text-center py-24 bg-white rounded-2xl shadow-sm border border-gray-100">
-                <div className="text-6xl mb-4 grayscale opacity-50">🏠</div>
-                <h3 className="text-xl font-bold text-brand-navy mb-2">
+                <h3 className="text-xl font-bold text-brand-navy">
                   No Results Found
                 </h3>
-                <p className="text-gray-400 max-w-xs mx-auto">
-                  We couldn't find any properties matching your current filters.
-                </p>
               </div>
             )}
 
             {totalPages > 1 && (
-              <div className="mt-16 flex justify-center items-center space-x-2">
-                <button
-                  onClick={() =>
-                    setCurrentPage((prev) => Math.max(prev - 1, 1))
-                  }
-                  disabled={currentPage === 1}
-                  className={`w-12 h-12 flex items-center justify-center rounded-full border transition-all ${
-                    currentPage === 1
-                      ? "border-gray-100 text-gray-300 cursor-not-allowed"
-                      : "border-brand-navy text-brand-navy hover:bg-brand-navy hover:text-white shadow-md"
-                  }`}
-                >
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M15 19l-7-7 7-7"
-                    ></path>
-                  </svg>
-                </button>
-
-                {[...Array(totalPages)].map((_, index) => (
+              <div className="mt-16 flex justify-center space-x-2">
+                {[...Array(totalPages)].map((_, i) => (
                   <button
-                    key={index}
-                    onClick={() => setCurrentPage(index + 1)}
-                    className={`w-12 h-12 flex items-center justify-center rounded-full font-bold text-sm transition-all shadow-sm ${
-                      currentPage === index + 1
-                        ? "bg-brand-navy text-white scale-110"
-                        : "bg-white text-gray-500 hover:text-brand-navy hover:bg-gray-50"
+                    key={i}
+                    onClick={() => setCurrentPage(i + 1)}
+                    className={`w-12 h-12 flex items-center justify-center rounded-full font-bold text-sm ${
+                      currentPage === i + 1
+                        ? "bg-brand-navy text-white"
+                        : "bg-white border text-gray-500"
                     }`}
                   >
-                    {index + 1}
+                    {i + 1}
                   </button>
                 ))}
-
-                <button
-                  onClick={() =>
-                    setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-                  }
-                  disabled={currentPage === totalPages}
-                  className={`w-12 h-12 flex items-center justify-center rounded-full border transition-all ${
-                    currentPage === totalPages
-                      ? "border-gray-100 text-gray-300 cursor-not-allowed"
-                      : "border-brand-navy text-brand-navy hover:bg-brand-navy hover:text-white shadow-md"
-                  }`}
-                >
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M9 5l7 7-7 7"
-                    ></path>
-                  </svg>
-                </button>
               </div>
             )}
           </div>
