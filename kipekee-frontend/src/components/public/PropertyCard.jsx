@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 const PropertyCard = ({ property }) => {
   const [isLiked, setIsLiked] = useState(false);
 
+  const isSold = property.status === "Sold";
+
   useEffect(() => {
     const savedLikes = JSON.parse(
       localStorage.getItem("kipekee_likes") || "[]"
@@ -16,7 +18,6 @@ const PropertyCard = ({ property }) => {
   const toggleLike = (e) => {
     e.preventDefault();
     e.stopPropagation();
-
     const savedLikes = JSON.parse(
       localStorage.getItem("kipekee_likes") || "[]"
     );
@@ -26,7 +27,6 @@ const PropertyCard = ({ property }) => {
     } else {
       newLikes = [...savedLikes, property.id];
     }
-
     localStorage.setItem("kipekee_likes", JSON.stringify(newLikes));
     setIsLiked(!isLiked);
   };
@@ -40,45 +40,56 @@ const PropertyCard = ({ property }) => {
         <img
           src={property.images ? property.images[0] : property.image_url}
           alt={property.title}
-          className="w-full h-full object-cover transition-transform duration-[2000ms] group-hover:scale-110"
+          className={`w-full h-full object-cover transition-transform duration-[2000ms] group-hover:scale-110 ${
+            isSold ? "grayscale" : ""
+          }`}
         />
 
         <div className="absolute inset-0 bg-black/30 transition-opacity duration-500 group-hover:opacity-10"></div>
-
         <div className="absolute inset-0 bg-gradient-to-t from-brand-navy/80 via-transparent to-transparent z-0"></div>
 
         <div className="absolute top-5 left-5 z-10">
-          <div className="bg-white/30 backdrop-blur-md border border-white/20 text-white text-xs font-bold px-4 py-2 uppercase tracking-wider rounded-full shadow-lg">
+          <div
+            className={`backdrop-blur-md border border-white/20 text-white text-xs font-bold px-4 py-2 uppercase tracking-wider rounded-full shadow-lg ${
+              isSold ? "bg-red-600" : "bg-white/30"
+            }`}
+          >
             {property.status}
           </div>
         </div>
 
-        <button
-          onClick={toggleLike}
-          className={`absolute top-5 right-5 z-20 bg-white/30 backdrop-blur-md border border-white/20 p-3 rounded-full transition-all duration-300 shadow-lg group-hover:scale-110 ${
-            isLiked
-              ? "bg-white text-red-500"
-              : "text-white hover:bg-white hover:text-red-500"
-          }`}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill={isLiked ? "currentColor" : "none"}
-            viewBox="0 0 24 24"
-            strokeWidth={2}
-            stroke="currentColor"
-            className="w-5 h-5"
+        {!isSold && (
+          <button
+            onClick={toggleLike}
+            className={`absolute top-5 right-5 z-20 bg-white/30 backdrop-blur-md border border-white/20 p-3 rounded-full transition-all duration-300 shadow-lg group-hover:scale-110 ${
+              isLiked
+                ? "bg-white text-red-500"
+                : "text-white hover:bg-white hover:text-red-500"
+            }`}
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"
-            />
-          </svg>
-        </button>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill={isLiked ? "currentColor" : "none"}
+              viewBox="0 0 24 24"
+              strokeWidth={2}
+              stroke="currentColor"
+              className="w-5 h-5"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"
+              />
+            </svg>
+          </button>
+        )}
 
         <div className="absolute bottom-24 left-6 z-20">
-          <h4 className="text-2xl md:text-3xl font-heading font-bold text-white drop-shadow-lg">
+          <h4
+            className={`text-2xl md:text-3xl font-heading font-bold text-white drop-shadow-lg ${
+              isSold ? "line-through opacity-70" : ""
+            }`}
+          >
             {property.price}
           </h4>
         </div>
@@ -106,26 +117,34 @@ const PropertyCard = ({ property }) => {
           </p>
         </div>
 
-        <div className="flex items-center justify-between py-4 border-t border-brand-navy/10 border-b mb-4">
-          <div className="flex items-center flex-col md:flex-row">
-            <span className="text-sm font-bold text-brand-navy">
-              {property.beds}{" "}
-              <span className="font-medium text-brand-navy/60">Beds</span>
+        {!isSold ? (
+          <div className="flex items-center justify-between py-4 border-t border-brand-navy/10 border-b mb-4">
+            <div className="flex items-center flex-col md:flex-row">
+              <span className="text-sm font-bold text-brand-navy">
+                {property.beds}{" "}
+                <span className="font-medium text-brand-navy/60">Beds</span>
+              </span>
+            </div>
+            <div className="flex items-center flex-col md:flex-row">
+              <span className="text-sm font-bold text-brand-navy">
+                {property.baths}{" "}
+                <span className="font-medium text-brand-navy/60">Baths</span>
+              </span>
+            </div>
+            <div className="flex items-center flex-col md:flex-row">
+              <span className="text-sm font-bold text-brand-navy">
+                {property.sqft}{" "}
+                <span className="font-medium text-brand-navy/60">sqft</span>
+              </span>
+            </div>
+          </div>
+        ) : (
+          <div className="py-4 border-t border-brand-navy/10 border-b mb-4 text-center">
+            <span className="text-red-500 font-bold uppercase tracking-widest text-sm">
+              Successfully Sold
             </span>
           </div>
-          <div className="flex items-center flex-col md:flex-row">
-            <span className="text-sm font-bold text-brand-navy">
-              {property.baths}{" "}
-              <span className="font-medium text-brand-navy/60">Baths</span>
-            </span>
-          </div>
-          <div className="flex items-center flex-col md:flex-row">
-            <span className="text-sm font-bold text-brand-navy">
-              {property.sqft}{" "}
-              <span className="font-medium text-brand-navy/60">sqft</span>
-            </span>
-          </div>
-        </div>
+        )}
 
         <div className="flex items-center justify-between">
           <div className="flex items-center">
@@ -142,12 +161,11 @@ const PropertyCard = ({ property }) => {
               </span>
             </div>
           </div>
-
           <Link
             to={`/properties/${property.id}`}
             className="text-xs text-brand-gold font-bold uppercase tracking-widest hover:text-brand-navy transition-colors cursor-pointer border-b-2 border-transparent hover:border-brand-gold py-1"
           >
-            View Details
+            {isSold ? "View Archive" : "View Details"}
           </Link>
         </div>
       </div>

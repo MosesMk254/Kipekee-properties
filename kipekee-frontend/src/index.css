@@ -17,3 +17,23 @@
     @apply font-body text-brand-dark bg-brand-gray;
   }
 }
+
+/* --- Swiper Custom Styles --- */
+.custom-swiper-pagination .swiper-pagination-bullet {
+  width: 10px;
+  height: 10px;
+  background-color: #d4af37; /* Brand Gold */
+  opacity: 0.3;
+  transition: all 0.3s ease;
+}
+
+.custom-swiper-pagination .swiper-pagination-bullet-active {
+  background-color: #1e293b; /* Brand Navy */
+  opacity: 1;
+  width: 24px; /* Elongate active dot */
+  border-radius: 5px;
+}
+
+.swiper-wrapper {
+  padding-bottom: 10px; /* Ensure shadows don't get cut off */
+}

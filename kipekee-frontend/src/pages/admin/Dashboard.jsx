@@ -145,6 +145,19 @@ const Dashboard = () => {
     }
   };
 
+  const handleMarkSold = async (id) => {
+    if (window.confirm("Mark this property as SOLD?")) {
+      try {
+        await axios.patch(`http://127.0.0.1:5000/api/properties/${id}/status`, {
+          status: "Sold",
+        });
+        fetchProperties();
+      } catch (err) {
+        alert("Error updating status");
+      }
+    }
+  };
+
   const handleDeleteProperty = async (id) => {
     if (window.confirm("Delete this property?")) {
       await axios.delete(`http://127.0.0.1:5000/api/properties/${id}`);
@@ -411,12 +424,23 @@ const Dashboard = () => {
                       {prop.price}
                     </p>
                   </div>
-                  <button
-                    onClick={() => handleDeleteProperty(prop.id)}
-                    className="text-red-500 hover:text-white hover:bg-red-500 border border-red-200 font-bold text-xs uppercase px-3 py-2 rounded transition"
-                  >
-                    Delete
-                  </button>
+                  <div className="flex flex-col gap-2">
+                    {prop.status !== "Sold" && (
+                      <button
+                        onClick={() => handleMarkSold(prop.id)}
+                        className="text-brand-navy hover:bg-brand-navy hover:text-white border border-brand-navy font-bold text-xs uppercase px-3 py-1 rounded transition"
+                      >
+                        Mark Sold
+                      </button>
+                    )}
+
+                    <button
+                      onClick={() => handleDeleteProperty(prop.id)}
+                      className="text-red-500 hover:text-white hover:bg-red-500 border border-red-200 font-bold text-xs uppercase px-3 py-1 rounded transition"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
               ))}
               {properties.length === 0 && (

@@ -62,13 +62,20 @@ const PropertyDetails = () => {
       </div>
     );
 
+  const isSold = property.status === "Sold";
+
   return (
     <div className="bg-white min-h-screen pt-32 pb-20">
       <div className="container mx-auto px-6 mb-12">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end">
           <div>
-            <h1 className="text-3xl md:text-5xl font-heading font-bold text-brand-navy mb-2">
+            <h1 className="text-3xl md:text-5xl font-heading font-bold text-brand-navy mb-2 flex items-center gap-4">
               {property.title}
+              {isSold && (
+                <span className="bg-red-600 text-white text-sm px-4 py-1 rounded-full uppercase tracking-wider shadow-lg animate-pulse">
+                  Sold
+                </span>
+              )}
             </h1>
             <p className="text-gray-500 text-lg flex items-center">
               <svg
@@ -94,10 +101,18 @@ const PropertyDetails = () => {
             </p>
           </div>
           <div className="mt-4 md:mt-0 text-left md:text-right">
-            <div className="text-3xl font-bold text-brand-gold">
+            <div
+              className={`text-3xl font-bold ${
+                isSold ? "text-gray-400 line-through" : "text-brand-gold"
+              }`}
+            >
               {property.price}
             </div>
-            <div className="inline-block bg-brand-navy text-white text-xs px-3 py-1 rounded uppercase tracking-wider mt-2">
+            <div
+              className={`inline-block text-white text-xs px-3 py-1 rounded uppercase tracking-wider mt-2 ${
+                isSold ? "bg-red-600" : "bg-brand-navy"
+              }`}
+            >
               {property.status}
             </div>
           </div>
@@ -105,12 +120,24 @@ const PropertyDetails = () => {
       </div>
 
       <div className="container mx-auto px-6 mb-16">
-        <div className="h-[400px] md:h-[600px] rounded-3xl overflow-hidden shadow-2xl mb-6">
+        <div className="h-[400px] md:h-[600px] rounded-3xl overflow-hidden shadow-2xl mb-6 relative">
           <img
             src={property.images[activeImage]}
             alt={property.title}
-            className="w-full h-full object-cover"
+            className={`w-full h-full object-cover ${
+              isSold ? "grayscale" : ""
+            }`}
           />
+
+          {isSold && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+              <div className="border-4 border-white p-8 rounded-xl transform -rotate-12">
+                <span className="text-6xl font-black text-white uppercase tracking-widest opacity-80">
+                  SOLD
+                </span>
+              </div>
+            </div>
+          )}
         </div>
 
         {property.images.length > 1 && (
@@ -123,7 +150,7 @@ const PropertyDetails = () => {
                   activeImage === index
                     ? "border-brand-gold scale-105"
                     : "border-transparent opacity-70 hover:opacity-100"
-                }`}
+                } ${isSold ? "grayscale" : ""}`}
               >
                 <img
                   src={img}
@@ -194,71 +221,117 @@ const PropertyDetails = () => {
 
         <div className="lg:col-span-1">
           <div className="bg-white p-8 rounded-2xl shadow-xl border border-gray-100 sticky top-32">
-            <h3 className="text-xl font-bold text-brand-navy mb-2">
-              Interested?
-            </h3>
-            <p className="text-gray-400 text-sm mb-6">
-              Schedule a viewing for {property.title}.
-            </p>
-
-            {formStatus === "success" ? (
-              <div className="bg-green-100 text-green-700 p-4 rounded text-center">
-                Message Sent! We will contact you soon.
+            {isSold ? (
+              <div className="text-center py-8">
+                <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg
+                    className="w-10 h-10 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                    ></path>
+                  </svg>
+                </div>
+                <h3 className="text-xl font-bold text-gray-800 mb-2">
+                  Off Market
+                </h3>
+                <p className="text-gray-500 text-sm">
+                  This property has been sold and is no longer available for
+                  viewings.
+                </p>
+                <button
+                  onClick={() => window.history.back()}
+                  className="mt-6 text-brand-gold font-bold text-sm uppercase tracking-wider hover:underline"
+                >
+                  Browse other Properties
+                </button>
               </div>
             ) : (
-              <form onSubmit={handleContactSubmit} className="space-y-4">
-                <input
-                  type="text"
-                  placeholder="Your Name"
-                  required
-                  value={contactForm.name}
-                  onChange={(e) =>
-                    setContactForm({ ...contactForm, name: e.target.value })
-                  }
-                  className="w-full bg-gray-50 border border-gray-200 rounded p-3 text-sm focus:border-brand-navy outline-none"
-                />
-                <input
-                  type="email"
-                  placeholder="Your Email"
-                  required
-                  value={contactForm.email}
-                  onChange={(e) =>
-                    setContactForm({ ...contactForm, email: e.target.value })
-                  }
-                  className="w-full bg-gray-50 border border-gray-200 rounded p-3 text-sm focus:border-brand-navy outline-none"
-                />
-                <input
-                  type="text"
-                  placeholder="Phone Number"
-                  required
-                  value={contactForm.phone}
-                  onChange={(e) =>
-                    setContactForm({ ...contactForm, phone: e.target.value })
-                  }
-                  className="w-full bg-gray-50 border border-gray-200 rounded p-3 text-sm focus:border-brand-navy outline-none"
-                />
-                <textarea
-                  rows="3"
-                  placeholder="I am interested in this property..."
-                  value={contactForm.message}
-                  onChange={(e) =>
-                    setContactForm({ ...contactForm, message: e.target.value })
-                  }
-                  className="w-full bg-gray-50 border border-gray-200 rounded p-3 text-sm focus:border-brand-navy outline-none"
-                ></textarea>
+              <>
+                <h3 className="text-xl font-bold text-brand-navy mb-2">
+                  Interested?
+                </h3>
+                <p className="text-gray-400 text-sm mb-6">
+                  Schedule a viewing for {property.title}.
+                </p>
 
-                <button
-                  disabled={formStatus === "sending"}
-                  className="w-full bg-brand-navy text-white font-bold py-3 rounded hover:bg-brand-gold transition-colors uppercase text-xs tracking-widest disabled:opacity-50"
-                >
-                  {formStatus === "sending" ? "Sending..." : "Request Viewing"}
-                </button>
-                {formStatus === "error" && (
-                  <p className="text-red-500 text-xs text-center">
-                    Failed to send. Please try again.
-                  </p>
+                {formStatus === "success" ? (
+                  <div className="bg-green-100 text-green-700 p-4 rounded text-center">
+                    Message Sent! We will contact you soon.
+                  </div>
+                ) : (
+                  <form onSubmit={handleContactSubmit} className="space-y-4">
+                    <input
+                      type="text"
+                      placeholder="Your Name"
+                      required
+                      value={contactForm.name}
+                      onChange={(e) =>
+                        setContactForm({ ...contactForm, name: e.target.value })
+                      }
+                      className="w-full bg-gray-50 border border-gray-200 rounded p-3 text-sm focus:border-brand-navy outline-none"
+                    />
+                    <input
+                      type="email"
+                      placeholder="Your Email"
+                      required
+                      value={contactForm.email}
+                      onChange={(e) =>
+                        setContactForm({
+                          ...contactForm,
+                          email: e.target.value,
+                        })
+                      }
+                      className="w-full bg-gray-50 border border-gray-200 rounded p-3 text-sm focus:border-brand-navy outline-none"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Phone Number"
+                      required
+                      value={contactForm.phone}
+                      onChange={(e) =>
+                        setContactForm({
+                          ...contactForm,
+                          phone: e.target.value,
+                        })
+                      }
+                      className="w-full bg-gray-50 border border-gray-200 rounded p-3 text-sm focus:border-brand-navy outline-none"
+                    />
+                    <textarea
+                      rows="3"
+                      placeholder="I am interested in this property..."
+                      value={contactForm.message}
+                      onChange={(e) =>
+                        setContactForm({
+                          ...contactForm,
+                          message: e.target.value,
+                        })
+                      }
+                      className="w-full bg-gray-50 border border-gray-200 rounded p-3 text-sm focus:border-brand-navy outline-none"
+                    ></textarea>
+
+                    <button
+                      disabled={formStatus === "sending"}
+                      className="w-full bg-brand-navy text-white font-bold py-3 rounded hover:bg-brand-gold transition-colors uppercase text-xs tracking-widest disabled:opacity-50"
+                    >
+                      {formStatus === "sending"
+                        ? "Sending..."
+                        : "Request Viewing"}
+                    </button>
+                    {formStatus === "error" && (
+                      <p className="text-red-500 text-xs text-center">
+                        Failed to send. Please try again.
+                      </p>
+                    )}
+                  </form>
                 )}
-              </form>
+              </>
             )}
           </div>
         </div>

@@ -169,6 +169,17 @@ def delete_property(id):
     db.session.commit()
     return jsonify({"message": "Deleted"}), 200
 
+@app.route('/api/properties/<int:id>/status', methods=['PATCH'])
+def update_property_status(id):
+    property = Property.query.get_or_404(id)
+    data = request.get_json()
+    
+    if 'status' in data:
+        property.status = data['status']
+        
+    db.session.commit()
+    return jsonify({"message": "Property status updated"})
+
 @app.route('/api/inquiries', methods=['POST'])
 def add_inquiry():
     data = request.get_json()
