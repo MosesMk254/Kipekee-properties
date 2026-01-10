@@ -59,6 +59,36 @@ const Dashboard = () => {
     }
   };
 
+  const handleStatusChange = async (id, newStatus) => {
+    try {
+      const updatedInquiries = inquiries.map((msg) =>
+        msg.id === id ? { ...msg, status: newStatus } : msg
+      );
+      setInquiries(updatedInquiries);
+      await axios.put(`http://127.0.0.1:5000/api/inquiries/${id}`, {
+        status: newStatus,
+      });
+    } catch (err) {
+      console.error("Failed to update status");
+      fetchInquiries();
+    }
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "New":
+        return "bg-blue-100 text-blue-800 border-blue-200";
+      case "Contacted":
+        return "bg-yellow-100 text-yellow-800 border-yellow-200";
+      case "Viewing":
+        return "bg-purple-100 text-purple-800 border-purple-200";
+      case "Closed":
+        return "bg-green-100 text-green-800 border-green-200";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
+  };
+
   const handleInputChange = (e) => {
     const value =
       e.target.type === "checkbox" ? e.target.checked : e.target.value;
@@ -414,23 +444,49 @@ const Dashboard = () => {
                 return (
                   <div
                     key={msg.id}
-                    className="border-b border-gray-100 pb-6 last:border-0 hover:bg-gray-50 p-4 rounded transition"
+                    className={`border-b border-gray-100 pb-6 last:border-0 hover:bg-gray-50 p-4 rounded transition border-l-4 ${
+                      msg.status === "New"
+                        ? "border-l-blue-500"
+                        : msg.status === "Contacted"
+                        ? "border-l-yellow-500"
+                        : msg.status === "Closed"
+                        ? "border-l-green-500"
+                        : "border-l-transparent"
+                    }`}
                   >
                     <div className="flex justify-between items-start mb-2">
                       <div>
-                        <h4 className="font-bold text-brand-navy text-lg">
-                          {msg.name}
-                        </h4>
-                        <a
-                          href={`mailto:${msg.email}`}
-                          className="text-sm text-gray-500 hover:text-brand-gold"
-                        >
-                          {msg.email}
-                        </a>
-                        <span className="text-gray-300 mx-2">|</span>
-                        <span className="text-sm text-gray-500">
-                          {msg.phone}
-                        </span>
+                        <div className="flex items-center gap-3">
+                          <h4 className="font-bold text-brand-navy text-lg">
+                            {msg.name}
+                          </h4>
+                          <select
+                            value={msg.status || "New"}
+                            onChange={(e) =>
+                              handleStatusChange(msg.id, e.target.value)
+                            }
+                            className={`text-xs font-bold px-3 py-1 rounded-full border cursor-pointer outline-none appearance-none ${getStatusColor(
+                              msg.status || "New"
+                            )}`}
+                          >
+                            <option value="New">● New</option>
+                            <option value="Contacted">● Contacted</option>
+                            <option value="Viewing">● Viewing</option>
+                            <option value="Closed">● Closed</option>
+                          </select>
+                        </div>
+                        <div className="mt-1">
+                          <a
+                            href={`mailto:${msg.email}`}
+                            className="text-sm text-gray-500 hover:text-brand-gold"
+                          >
+                            {msg.email}
+                          </a>
+                          <span className="text-gray-300 mx-2">|</span>
+                          <span className="text-sm text-gray-500">
+                            {msg.phone}
+                          </span>
+                        </div>
                       </div>
                       <span className="text-xs text-gray-400 font-medium bg-gray-100 px-2 py-1 rounded">
                         {new Date(msg.created_at).toLocaleString("en-KE", {
@@ -443,7 +499,7 @@ const Dashboard = () => {
                       </span>
                     </div>
 
-                    <p className="text-gray-700 bg-gray-50 p-4 rounded-lg border border-gray-100 text-sm leading-relaxed mb-3">
+                    <p className="text-gray-700 bg-gray-50 p-4 rounded-lg border border-gray-100 text-sm leading-relaxed mb-3 mt-2">
                       {msg.message}
                     </p>
 

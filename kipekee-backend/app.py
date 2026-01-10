@@ -64,6 +64,7 @@ class Inquiry(db.Model):
     message = db.Column(db.Text, nullable=False)
     property_id = db.Column(db.Integer, db.ForeignKey('property.id'), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    status = db.Column(db.String(50), default="New") 
 
     def to_dict(self):
         return {
@@ -73,7 +74,8 @@ class Inquiry(db.Model):
             'phone': self.phone,
             'message': self.message,
             'property_id': self.property_id,
-            'created_at': self.created_at.isoformat() + 'Z'
+            'created_at': self.created_at.isoformat() + 'Z',
+            'status': self.status 
         }
 
 class User(db.Model):
@@ -192,6 +194,15 @@ def delete_inquiry(id):
     db.session.delete(inquiry)
     db.session.commit()
     return jsonify({"message": "Deleted"}), 200
+
+@app.route('/api/inquiries/<int:id>', methods=['PUT'])
+def update_inquiry_status(id):
+    inquiry = Inquiry.query.get_or_404(id)
+    data = request.get_json()
+    if 'status' in data:
+        inquiry.status = data['status']
+    db.session.commit()
+    return jsonify({"message": "Status updated"})
 
 if __name__ == '__main__':
     init_db()
