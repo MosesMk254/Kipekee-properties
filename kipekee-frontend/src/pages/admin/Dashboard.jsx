@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import DashboardHome from "./DashboardHome";
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [properties, setProperties] = useState([]);
   const [inquiries, setInquiries] = useState([]);
-  const [activeTab, setActiveTab] = useState("properties");
+  const [activeTab, setActiveTab] = useState("overview");
 
   const [formData, setFormData] = useState({
     title: "",
@@ -149,6 +150,17 @@ const Dashboard = () => {
       <div className="container mx-auto px-6 mt-8 mb-8">
         <div className="flex gap-4 border-b border-gray-300 pb-4">
           <button
+            onClick={() => setActiveTab("overview")}
+            className={`px-6 py-2 rounded-full font-bold text-sm transition-all ${
+              activeTab === "overview"
+                ? "bg-brand-navy text-white shadow-lg"
+                : "bg-white text-gray-500 hover:bg-gray-200"
+            }`}
+          >
+            Overview
+          </button>
+
+          <button
             onClick={() => setActiveTab("properties")}
             className={`px-6 py-2 rounded-full font-bold text-sm transition-all ${
               activeTab === "properties"
@@ -158,6 +170,7 @@ const Dashboard = () => {
           >
             Manage Properties
           </button>
+
           <button
             onClick={() => {
               setActiveTab("inbox");
@@ -176,6 +189,15 @@ const Dashboard = () => {
           </button>
         </div>
       </div>
+
+      {activeTab === "overview" && (
+        <div className="container mx-auto px-6">
+          <h2 className="text-2xl font-bold text-brand-navy mb-6">
+            Business Overview
+          </h2>
+          <DashboardHome properties={properties} inquiries={inquiries} />
+        </div>
+      )}
 
       {activeTab === "properties" && (
         <div className="container mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-12">
