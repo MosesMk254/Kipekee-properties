@@ -32,9 +32,14 @@ const Hero = () => {
 
   const handleSearch = () => {
     let beds = "All";
-    const bedMatch = keyword.match(/(\d+)\s*bed/i);
-    if (bedMatch) beds = parseInt(bedMatch[1]);
-    if (keyword.toLowerCase().includes("studio")) beds = 0;
+    const lowerKeyword = keyword.toLowerCase();
+
+    if (lowerKeyword.includes("studio")) {
+      beds = "0";
+    } else {
+      const bedMatch = keyword.match(/(\d+)\s*bed/i);
+      if (bedMatch) beds = bedMatch[1];
+    }
 
     navigate("/properties", {
       state: {
@@ -52,7 +57,7 @@ const Hero = () => {
     "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?q=80&w=1920&auto=format&fit=crop",
     "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1920&auto=format&fit=crop",
     "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=1920&auto=format&fit=crop",
-    "https://plus.unsplash.com/premium_photo-1677474827615-31ea6fa13efe?q=80&w=1170&auto=format&fit=crop",
+    "https://plus.unsplash.com/premium_photo-1677474827680-31ea6fa13efe?q=80&w=1170&auto=format&fit=crop",
   ];
 
   return (
@@ -130,11 +135,11 @@ const Hero = () => {
           <div className="bg-white p-6 rounded-b-md rounded-tr-md flex flex-col md:flex-row gap-4 items-center animate-in fade-in slide-in-from-bottom-4 duration-1000">
             <div className="flex-1 w-full relative group">
               <label className="text-[10px] uppercase font-bold text-gray-400 tracking-wider mb-1 block">
-                Keyword
+                Keyword (e.g. Studio, 2 Bedroom)
               </label>
               <input
                 type="text"
-                placeholder="Enter address, city..."
+                placeholder="Type unit size or location..."
                 value={keyword}
                 onChange={(e) => setKeyword(e.target.value)}
                 className="w-full border-b border-gray-200 py-2 outline-none focus:border-brand-navy text-brand-dark font-medium placeholder-gray-300 transition-all"

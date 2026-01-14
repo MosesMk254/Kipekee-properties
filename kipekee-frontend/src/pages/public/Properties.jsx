@@ -20,7 +20,9 @@ const Properties = () => {
   const [filterSuitability, setFilterSuitability] = useState("All");
   const [filterBeds, setFilterBeds] = useState(state?.filterBeds || "All");
 
-  const [priceRange, setPriceRange] = useState({ min: 0, max: 500000000 });
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
+
   const [searchQuery, setSearchQuery] = useState(state?.searchQuery || "");
 
   const [filteredProperties, setFilteredProperties] = useState([]);
@@ -42,7 +44,6 @@ const Properties = () => {
         setLoading(false);
       }
     };
-
     fetchProperties();
   }, []);
 
@@ -53,12 +54,23 @@ const Properties = () => {
 
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
-      result = result.filter(
-        (p) =>
-          p.title.toLowerCase().includes(q) ||
-          p.location.toLowerCase().includes(q) ||
-          p.description.toLowerCase().includes(q)
-      );
+      result = result.filter((p) => {
+        const titleMatch = p.title.toLowerCase().includes(q);
+        const locMatch = p.location.toLowerCase().includes(q);
+
+        const unitMatch =
+          p.units &&
+          p.units.some(
+            (u) =>
+              u.type.toLowerCase().includes(q) ||
+              (q.includes("studio") &&
+                u.type.toLowerCase().includes("studio")) ||
+              (q.includes("1 bed") && u.beds == 1) ||
+              (q.includes("2 bed") && u.beds == 2)
+          );
+
+        return titleMatch || locMatch || unitMatch;
+      });
     }
 
     if (filterLocation !== "All") {
@@ -77,26 +89,39 @@ const Properties = () => {
     }
 
     if (filterBeds !== "All") {
+      const targetBeds = parseInt(filterBeds);
       result = result.filter((p) => {
-        const mainMatch = p.beds == filterBeds;
+        const mainMatch = p.beds === targetBeds;
         const unitMatch =
           p.units &&
-          p.units.some((u) => u.beds == filterBeds && u.status === "Available");
+          p.units.some(
+            (u) => u.beds === targetBeds && u.status === "Available"
+          );
+
         return mainMatch || unitMatch;
       });
     }
 
-    const cleanPrice = (priceStr) => {
-      if (!priceStr) return 0;
-      return parseInt(priceStr.replace(/[^0-9]/g, ""));
-    };
-
     result = result.filter((p) => {
-      const price = cleanPrice(p.price);
-      return (
-        price >= priceRange.min &&
-        (priceRange.max === 0 || price <= priceRange.max)
-      );
+      let effectivePrice = 0;
+
+      const availableUnits = p.units
+        ? p.units.filter((u) => u.status === "Available")
+        : [];
+
+      if (availableUnits.length > 0) {
+        const prices = availableUnits.map(
+          (u) => parseInt(u.price.replace(/[^0-9]/g, "")) || 0
+        );
+        effectivePrice = Math.min(...prices);
+      } else {
+        effectivePrice = parseInt(p.price.replace(/[^0-9]/g, "")) || 0;
+      }
+
+      const min = minPrice ? parseInt(minPrice) : 0;
+      const max = maxPrice ? parseInt(maxPrice) : Infinity;
+
+      return effectivePrice >= min && effectivePrice <= max;
     });
 
     setFilteredProperties(result);
@@ -107,7 +132,8 @@ const Properties = () => {
     filterStatus,
     filterSuitability,
     filterBeds,
-    priceRange,
+    minPrice,
+    maxPrice,
     searchQuery,
     properties,
   ]);
@@ -121,30 +147,24 @@ const Properties = () => {
   const totalPages = Math.ceil(filteredProperties.length / itemsPerPage);
 
   const locations = [
-    "All",
     ...new Set(
       properties.map((p) => (p.location ? p.location.split(",")[0] : ""))
     ),
   ].filter((l) => l);
-  const types = ["All", ...new Set(properties.map((p) => p.type))].filter(
-    (t) => t
-  );
+  const types = [...new Set(properties.map((p) => p.type))].filter((t) => t);
 
-  if (loading) {
+  if (loading)
     return (
       <div className="min-h-screen flex justify-center items-center bg-brand-gray">
         <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-brand-navy"></div>
       </div>
     );
-  }
-
-  if (error) {
+  if (error)
     return (
       <div className="min-h-screen flex justify-center items-center text-red-500 font-bold">
         {error}
       </div>
     );
-  }
 
   return (
     <div className="bg-brand-gray min-h-screen pt-32 pb-20">
@@ -190,7 +210,8 @@ const Properties = () => {
                     setFilterSuitability("All");
                     setFilterBeds("All");
                     setSearchQuery("");
-                    setPriceRange({ min: 0, max: 500000000 });
+                    setMinPrice("");
+                    setMaxPrice("");
                   }}
                   className="text-xs text-brand-gold font-bold uppercase hover:text-brand-navy transition-colors"
                 >
@@ -204,13 +225,12 @@ const Properties = () => {
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g. Villa..."
+                  placeholder="e.g. Studio, 2 Bedroom..."
                   className="w-full bg-gray-50 border border-gray-200 rounded p-3 text-sm"
                   onChange={(e) => setSearchQuery(e.target.value)}
                   value={searchQuery}
                 />
               </div>
-
               <div className="mb-8">
                 <label className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3 block">
                   Classification
@@ -228,7 +248,6 @@ const Properties = () => {
                   </option>
                 </select>
               </div>
-
               <div className="mb-8">
                 <label className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3 block">
                   Listing Status
@@ -249,7 +268,6 @@ const Properties = () => {
                   ))}
                 </div>
               </div>
-
               <div className="mb-8">
                 <label className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3 block">
                   Location
@@ -267,7 +285,6 @@ const Properties = () => {
                   ))}
                 </select>
               </div>
-
               <div className="mb-8">
                 <label className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3 block">
                   Property Type
@@ -286,39 +303,26 @@ const Properties = () => {
                 </select>
               </div>
 
-              <div className="mb-8">
-                <label className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3 block">
-                  Bedrooms
-                </label>
-                <select
-                  className="w-full bg-gray-50 border border-gray-200 rounded p-3 text-sm outline-none"
-                  onChange={(e) => setFilterBeds(e.target.value)}
-                  value={filterBeds}
-                >
-                  <option value="All">Any Size</option>
-                  <option value="0">Studio</option>
-                  <option value="1">1 Bedroom</option>
-                  <option value="2">2 Bedrooms</option>
-                  <option value="3">3 Bedrooms</option>
-                  <option value="4">4+ Bedrooms</option>
-                </select>
-              </div>
-
               <div className="mb-2">
                 <label className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3 block">
-                  Max Price
+                  Price Range (KES)
                 </label>
-                <input
-                  type="number"
-                  placeholder="No Limit"
-                  className="w-full bg-gray-50 border border-gray-200 rounded p-3 text-sm"
-                  onChange={(e) =>
-                    setPriceRange({
-                      ...priceRange,
-                      max: e.target.value || 500000000,
-                    })
-                  }
-                />
+                <div className="flex gap-2">
+                  <input
+                    type="number"
+                    placeholder="Min"
+                    className="w-full bg-gray-50 border border-gray-200 rounded p-3 text-sm"
+                    value={minPrice}
+                    onChange={(e) => setMinPrice(e.target.value)}
+                  />
+                  <input
+                    type="number"
+                    placeholder="Max"
+                    className="w-full bg-gray-50 border border-gray-200 rounded p-3 text-sm"
+                    value={maxPrice}
+                    onChange={(e) => setMaxPrice(e.target.value)}
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -329,7 +333,6 @@ const Properties = () => {
                 Found <strong>{filteredProperties.length}</strong> Properties
               </span>
             </div>
-
             {currentItems.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                 {currentItems.map((prop) => (
@@ -346,7 +349,6 @@ const Properties = () => {
                 </h3>
               </div>
             )}
-
             {totalPages > 1 && (
               <div className="mt-16 flex justify-center space-x-2">
                 {[...Array(totalPages)].map((_, i) => (
