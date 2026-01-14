@@ -58,7 +58,6 @@ const About = () => {
             'url("https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1920&auto=format&fit=crop")',
         }}
       >
-
         <div className="absolute inset-0 bg-brand-navy/90"></div>
 
         <div className="container mx-auto px-6 relative z-10">
@@ -143,7 +142,7 @@ const About = () => {
 
       <div className="bg-gray-50 py-24">
         <div className="container mx-auto px-6">
-          <div className="bg-white rounded-3xl shadow-xl overflow-hidden flex flex-col md:flex-row">
+          {/* <div className="bg-white rounded-3xl shadow-xl overflow-hidden flex flex-col md:flex-row">
             <motion.div
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
@@ -193,6 +192,47 @@ const About = () => {
                   Sarah Jenkins
                 </div>
               </motion.div>
+            </div>
+          </div> */}
+          <div className="bg-white py-20">
+            <div className="container mx-auto px-6 text-center">
+              <h2 className="text-3xl font-heading font-bold text-brand-navy mb-12">
+                Our Core Values
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="p-6 border border-gray-100 rounded-xl shadow-sm">
+                  <div className="w-12 h-12 bg-brand-gold/10 rounded-full flex items-center justify-center mx-auto mb-4 text-brand-gold font-bold text-xl">
+                    1
+                  </div>
+                  <h3 className="font-bold text-brand-navy mb-2">
+                    Transparency
+                  </h3>
+                  <p className="text-gray-500 text-sm">
+                    We believe in clear, honest communication. No hidden fees,
+                    no surprises—just straight talk.
+                  </p>
+                </div>
+                <div className="p-6 border border-gray-100 rounded-xl shadow-sm">
+                  <div className="w-12 h-12 bg-brand-gold/10 rounded-full flex items-center justify-center mx-auto mb-4 text-brand-gold font-bold text-xl">
+                    2
+                  </div>
+                  <h3 className="font-bold text-brand-navy mb-2">Insight</h3>
+                  <p className="text-gray-500 text-sm">
+                    We provide data-driven market analysis to turn your property
+                    purchase into a smart investment.
+                  </p>
+                </div>
+                <div className="p-6 border border-gray-100 rounded-xl shadow-sm">
+                  <div className="w-12 h-12 bg-brand-gold/10 rounded-full flex items-center justify-center mx-auto mb-4 text-brand-gold font-bold text-xl">
+                    3
+                  </div>
+                  <h3 className="font-bold text-brand-navy mb-2">Excellence</h3>
+                  <p className="text-gray-500 text-sm">
+                    From viewing to closing, we ensure a seamless, premium
+                    experience for every client.
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>

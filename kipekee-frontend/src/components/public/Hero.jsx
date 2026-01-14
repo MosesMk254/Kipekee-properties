@@ -1,20 +1,58 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, EffectFade } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/effect-fade";
 
 const Hero = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("sell");
+
+  const [keyword, setKeyword] = useState("");
+  const [propertyType, setPropertyType] = useState("All Types");
+  const [locationFilter, setLocationFilter] = useState("All Cities");
+  const [availableLocations, setAvailableLocations] = useState([]);
+
+  useEffect(() => {
+    const fetchLocations = async () => {
+      try {
+        const res = await axios.get("http://127.0.0.1:5000/api/properties");
+        const locs = [
+          ...new Set(res.data.map((p) => p.location.split(",")[0].trim())),
+        ];
+        setAvailableLocations(locs);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchLocations();
+  }, []);
+
+  const handleSearch = () => {
+    let beds = "All";
+    const bedMatch = keyword.match(/(\d+)\s*bed/i);
+    if (bedMatch) beds = parseInt(bedMatch[1]);
+    if (keyword.toLowerCase().includes("studio")) beds = 0;
+
+    navigate("/properties", {
+      state: {
+        filterLocation:
+          locationFilter === "All Cities" ? "All" : locationFilter,
+        filterType: propertyType === "All Types" ? "All" : propertyType,
+        filterStatus: activeTab === "sell" ? "For Sale" : "For Rent",
+        filterBeds: beds,
+        searchQuery: keyword,
+      },
+    });
+  };
 
   const slides = [
     "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?q=80&w=1920&auto=format&fit=crop",
-
     "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1920&auto=format&fit=crop",
-
     "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=1920&auto=format&fit=crop",
-
-    "https://plus.unsplash.com/premium_photo-1677474827615-31ea6fa13efe?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", // Bright Interior
+    "https://plus.unsplash.com/premium_photo-1677474827615-31ea6fa13efe?q=80&w=1170&auto=format&fit=crop",
   ];
 
   return (
@@ -24,7 +62,6 @@ const Hero = () => {
           0% { transform: scale(1); }
           100% { transform: scale(1.15); }
         }
-        /* Only animate the image when the slide is active */
         .swiper-slide-active .slide-image {
           animation: kenBurns 8s linear forwards;
         }
@@ -51,7 +88,6 @@ const Hero = () => {
                   alt={`Luxury Home ${index + 1}`}
                   className="slide-image w-full h-full object-cover"
                 />
-
                 <div className="absolute inset-0 bg-gradient-to-b from-brand-navy/60 via-brand-navy/40 to-brand-navy/60"></div>
               </div>
             </SwiperSlide>
@@ -99,6 +135,8 @@ const Hero = () => {
               <input
                 type="text"
                 placeholder="Enter address, city..."
+                value={keyword}
+                onChange={(e) => setKeyword(e.target.value)}
                 className="w-full border-b border-gray-200 py-2 outline-none focus:border-brand-navy text-brand-dark font-medium placeholder-gray-300 transition-all"
               />
             </div>
@@ -107,11 +145,17 @@ const Hero = () => {
               <label className="text-[10px] uppercase font-bold text-gray-400 tracking-wider mb-1 block">
                 Property Type
               </label>
-              <select className="w-full border-b border-gray-200 py-2 outline-none focus:border-brand-navy text-brand-dark font-medium bg-white cursor-pointer appearance-none">
+              <select
+                value={propertyType}
+                onChange={(e) => setPropertyType(e.target.value)}
+                className="w-full border-b border-gray-200 py-2 outline-none focus:border-brand-navy text-brand-dark font-medium bg-white cursor-pointer appearance-none"
+              >
                 <option>All Types</option>
                 <option>Apartment</option>
                 <option>Villa</option>
                 <option>Office</option>
+                <option>Penthouse</option>
+                <option>Land</option>
               </select>
             </div>
 
@@ -119,15 +163,24 @@ const Hero = () => {
               <label className="text-[10px] uppercase font-bold text-gray-400 tracking-wider mb-1 block">
                 Location
               </label>
-              <select className="w-full border-b border-gray-200 py-2 outline-none focus:border-brand-navy text-brand-dark font-medium bg-white cursor-pointer appearance-none">
+              <select
+                value={locationFilter}
+                onChange={(e) => setLocationFilter(e.target.value)}
+                className="w-full border-b border-gray-200 py-2 outline-none focus:border-brand-navy text-brand-dark font-medium bg-white cursor-pointer appearance-none"
+              >
                 <option>All Cities</option>
-                <option>Nairobi</option>
-                <option>Mombasa</option>
-                <option>Kisumu</option>
+                {availableLocations.map((loc) => (
+                  <option key={loc} value={loc}>
+                    {loc}
+                  </option>
+                ))}
               </select>
             </div>
 
-            <button className="w-full md:w-auto bg-brand-gold hover:bg-brand-goldHover text-white font-bold py-4 px-10 rounded shadow-lg transform hover:-translate-y-1 transition-all uppercase text-sm tracking-wider">
+            <button
+              onClick={handleSearch}
+              className="w-full md:w-auto bg-brand-gold hover:bg-brand-goldHover text-white font-bold py-4 px-10 rounded shadow-lg transform hover:-translate-y-1 transition-all uppercase text-sm tracking-wider"
+            >
               Search
             </button>
           </div>

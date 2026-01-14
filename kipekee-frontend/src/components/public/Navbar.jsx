@@ -49,22 +49,17 @@ const Navbar = () => {
             </Link>
           </div>
 
-          <div className="hidden md:flex space-x-8 text-white font-medium text-sm tracking-wide">
+          <div className="hidden md:flex space-x-8 text-white font-medium text-sm tracking-wide items-center">
             {["HOME", "PROPERTIES", "ABOUT", "BLOG", "CONTACT"].map((item) => (
               <Link
                 key={item}
                 to={item === "HOME" ? "/" : `/${item.toLowerCase()}`}
-                className="hover:text-brand-gold transition"
+                className="relative group hover:text-brand-gold transition-colors duration-300"
               >
                 {item}
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-brand-gold transition-all duration-300 group-hover:w-full"></span>
               </Link>
             ))}
-          </div>
-
-          <div className="hidden md:block">
-            <button className="bg-brand-gold text-white px-6 py-3 rounded-sm hover:bg-brand-goldHover transition font-bold uppercase text-xs tracking-widest">
-              List Property
-            </button>
           </div>
 
           <button
@@ -125,14 +120,6 @@ const Navbar = () => {
                   </Link>
                 )
               )}
-
-              <div className="pt-8">
-                <Link to="/contact">
-                  <button className="bg-brand-gold text-white px-8 py-4 rounded-sm font-bold uppercase text-sm tracking-widest">
-                    Talk to an Agent
-                  </button>
-                </Link>
-              </div>
             </div>
           </motion.div>
         )}

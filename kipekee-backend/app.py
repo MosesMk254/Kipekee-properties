@@ -5,6 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from werkzeug.utils import secure_filename
 from datetime import datetime
+import uuid
 
 app = Flask(__name__)
 CORS(app)
@@ -18,23 +19,59 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
 
-class Property(db.Model):
+class Unit(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(255), nullable=False)
-    price = db.Column(db.String(50), nullable=False)
-    location = db.Column(db.String(100), nullable=False)
-    type = db.Column(db.String(50))
-    status = db.Column(db.String(50))
+    property_id = db.Column(db.Integer, db.ForeignKey('property.id'), nullable=False)
+    type = db.Column(db.String(50), nullable=False) 
+    price = db.Column(db.String(50), nullable=False) 
+    size = db.Column(db.Integer) 
     beds = db.Column(db.Integer)
     baths = db.Column(db.Integer)
-    sqft = db.Column(db.Integer)
-    description = db.Column(db.Text)
-    amenities = db.Column(db.Text) 
-    is_featured = db.Column(db.Boolean, default=False) 
-    
-    images = db.relationship('PropertyImage', backref='property', lazy=True, cascade="all, delete-orphan")
+    status = db.Column(db.String(50), default="Available") 
 
     def to_dict(self):
+        return {
+            'id': self.id,
+            'type': self.type,
+            'price': self.price,
+            'size': self.size,
+            'beds': self.beds,
+            'baths': self.baths,
+            'status': self.status
+        }
+
+class Property(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=False)
+    price = db.Column(db.String(50), nullable=False)
+    location = db.Column(db.String(100), nullable=False)
+    type = db.Column(db.String(50), nullable=False)
+    status = db.Column(db.String(50), nullable=False)
+    suitability = db.Column(db.String(50), default="Home Living")
+    
+    rental_yield = db.Column(db.String(50), default="0%")
+    annual_growth = db.Column(db.String(50), default="0%")
+    market_comparison = db.Column(db.String(50), default="Average")
+    
+    nearby_schools = db.Column(db.String(200), default="")
+    nearby_hospitals = db.Column(db.String(200), default="")
+    nearby_shopping = db.Column(db.String(200), default="")
+    
+    beds = db.Column(db.Integer)
+    baths = db.Column(db.Integer)
+    sqm = db.Column(db.Integer)
+    description = db.Column(db.Text, nullable=False)
+    amenities = db.Column(db.String(500)) 
+    is_featured = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    property_images = db.relationship('PropertyImage', backref='property', lazy=True, cascade="all, delete-orphan")
+    units = db.relationship('Unit', backref='property', lazy=True, cascade="all, delete-orphan")
+
+    def to_dict(self):
+        real_images_list = [img.image_url for img in self.property_images]
+        units_list = [u.to_dict() for u in self.units]
+
         return {
             'id': self.id,
             'title': self.title,
@@ -42,13 +79,21 @@ class Property(db.Model):
             'location': self.location,
             'type': self.type,
             'status': self.status,
+            'suitability': self.suitability,
+            'rental_yield': self.rental_yield,
+            'annual_growth': self.annual_growth,
+            'market_comparison': self.market_comparison,
+            'nearby_schools': self.nearby_schools,
+            'nearby_hospitals': self.nearby_hospitals,
+            'nearby_shopping': self.nearby_shopping,
             'beds': self.beds,
             'baths': self.baths,
-            'sqft': self.sqft,
+            'sqm': self.sqm,
             'description': self.description,
             'amenities': self.amenities.split(',') if self.amenities else [],
             'is_featured': self.is_featured,
-            'images': [img.image_url for img in self.images]
+            'images': real_images_list,
+            'units': units_list
         }
 
 class PropertyImage(db.Model):
@@ -98,7 +143,6 @@ def init_db():
             db.session.add(admin)
             db.session.commit()
 
-
 @app.route('/api/login', methods=['POST'])
 def login():
     data = request.get_json()
@@ -110,18 +154,86 @@ def login():
 @app.route('/api/properties', methods=['GET'])
 def get_properties():
     featured_only = request.args.get('featured')
-    
     if featured_only == 'true':
         properties = Property.query.filter_by(is_featured=True).order_by(Property.id.desc()).all()
     else:
-        properties = Property.query.order_by(Property.id.desc()).all()
-        
+        properties = Property.query.order_by(Property.id.desc()).all()  
     return jsonify([p.to_dict() for p in properties])
 
 @app.route('/api/properties/<int:id>', methods=['GET'])
 def get_single_property(id):
     prop = Property.query.get_or_404(id)
     return jsonify(prop.to_dict())
+
+@app.route('/api/properties/<int:id>', methods=['PUT'])
+def update_property(id):
+    try:
+        prop = Property.query.get_or_404(id)
+        prop.title = request.form['title']
+        prop.price = request.form['price']
+        prop.location = request.form['location']
+        prop.type = request.form['type']
+        prop.status = request.form['status']
+        prop.suitability = request.form.get('suitability', 'Home Living')
+        prop.rental_yield = request.form.get('rental_yield', 'N/A')
+        prop.annual_growth = request.form.get('annual_growth', 'N/A')
+        prop.market_comparison = request.form.get('market_comparison', 'Average')
+        prop.nearby_schools = request.form.get('nearby_schools', '')
+        prop.nearby_hospitals = request.form.get('nearby_hospitals', '')
+        prop.nearby_shopping = request.form.get('nearby_shopping', '')
+        prop.beds = request.form['beds']
+        prop.baths = request.form['baths']
+        prop.sqm = request.form['sqm']
+        prop.description = request.form['description']
+        prop.amenities = request.form['amenities']
+        prop.is_featured = request.form.get('is_featured') == 'true'
+
+        files = request.files.getlist('images') 
+        for file in files:
+            if file and file.filename != '':
+                filename = secure_filename(file.filename)
+                unique_filename = str(uuid.uuid4())[:8] + "_" + filename
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], unique_filename))
+                full_url = request.host_url + 'static/uploads/' + unique_filename
+                new_image = PropertyImage(image_url=full_url, property_id=prop.id)
+                db.session.add(new_image)
+
+        Unit.query.filter_by(property_id=prop.id).delete()
+        
+        base_unit_type = "Studio" if int(request.form['beds']) == 0 else f"{request.form['beds']} Bed Base"
+        base_unit = Unit(
+            property_id=prop.id,
+            type=base_unit_type,
+            price=request.form['price'],
+            size=request.form['sqm'],
+            beds=request.form['beds'],
+            baths=request.form['baths']
+        )
+        db.session.add(base_unit)
+
+        unit_types = request.form.getlist('unit_types')
+        unit_prices = request.form.getlist('unit_prices')
+        unit_sizes = request.form.getlist('unit_sizes')
+        unit_beds = request.form.getlist('unit_beds')
+        unit_baths = request.form.getlist('unit_baths')
+
+        for i in range(len(unit_types)):
+            if unit_types[i]:
+                new_unit = Unit(
+                    property_id=prop.id,
+                    type=unit_types[i],
+                    price=unit_prices[i],
+                    size=unit_sizes[i],
+                    beds=unit_beds[i],
+                    baths=unit_baths[i] if i < len(unit_baths) else 0
+                )
+                db.session.add(new_unit)
+
+        db.session.commit()
+        return jsonify({"message": "Property Updated Successfully!"})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/api/properties', methods=['POST'])
 def add_property():
@@ -132,42 +244,77 @@ def add_property():
             location=request.form['location'],
             type=request.form['type'],
             status=request.form['status'],
-            beds=int(request.form['beds']),
-            baths=int(request.form['baths']),
-            sqft=int(request.form['sqft']),
+            suitability=request.form.get('suitability', 'Home Living'),
+            rental_yield=request.form.get('rental_yield', 'N/A'),
+            annual_growth=request.form.get('annual_growth', 'N/A'),
+            market_comparison=request.form.get('market_comparison', 'Average'),
+            nearby_schools=request.form.get('nearby_schools', ''),
+            nearby_hospitals=request.form.get('nearby_hospitals', ''),
+            nearby_shopping=request.form.get('nearby_shopping', ''),
+            beds=request.form['beds'],
+            baths=request.form['baths'],
+            sqm=request.form['sqm'],
             description=request.form['description'],
-            amenities=request.form.get('amenities', ''),
-            is_featured=request.form.get('is_featured') == 'true'
+            amenities=request.form['amenities'],
+            is_featured=request.form.get('is_featured') == 'true',
         )
+
         db.session.add(new_property)
         db.session.commit() 
 
+        base_unit_type = "Studio" if int(request.form['beds']) == 0 else f"{request.form['beds']} Bed Base"
+        base_unit = Unit(
+            property_id=new_property.id,
+            type=base_unit_type,
+            price=request.form['price'],
+            size=request.form['sqm'],
+            beds=request.form['beds'],
+            baths=request.form['baths']
+        )
+        db.session.add(base_unit)
+
         files = request.files.getlist('images') 
-        
         for file in files:
             if file and file.filename != '':
                 filename = secure_filename(file.filename)
-                import uuid
                 unique_filename = str(uuid.uuid4())[:8] + "_" + filename
                 file.save(os.path.join(app.config['UPLOAD_FOLDER'], unique_filename))
-                
                 full_url = request.host_url + 'static/uploads/' + unique_filename
-                
                 new_image = PropertyImage(image_url=full_url, property_id=new_property.id)
                 db.session.add(new_image)
         
+        unit_types = request.form.getlist('unit_types')
+        unit_prices = request.form.getlist('unit_prices')
+        unit_sizes = request.form.getlist('unit_sizes')
+        unit_beds = request.form.getlist('unit_beds')
+        unit_baths = request.form.getlist('unit_baths')
+
+        for i in range(len(unit_types)):
+            if unit_types[i]:
+                new_unit = Unit(
+                    property_id=new_property.id,
+                    type=unit_types[i],
+                    price=unit_prices[i],
+                    size=unit_sizes[i],
+                    beds=unit_beds[i],
+                    baths=unit_baths[i] if i < len(unit_baths) else 0
+                )
+                db.session.add(new_unit)
+
         db.session.commit()
         return jsonify({"message": "Property Added!"}), 201
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@app.route('/api/properties/<int:id>', methods=['DELETE'])
-def delete_property(id):
-    prop = Property.query.get_or_404(id)
-    db.session.delete(prop)
+@app.route('/api/units/<int:id>/status', methods=['PATCH'])
+def update_unit_status(id):
+    unit = Unit.query.get_or_404(id)
+    data = request.get_json()
+    if 'status' in data:
+        unit.status = data['status']
     db.session.commit()
-    return jsonify({"message": "Deleted"}), 200
+    return jsonify({"message": "Unit status updated", "unit": unit.to_dict()})
 
 @app.route('/api/properties/<int:id>/status', methods=['PATCH'])
 def update_property_status(id):
@@ -175,10 +322,22 @@ def update_property_status(id):
     data = request.get_json()
     
     if 'status' in data:
-        property.status = data['status']
+        new_status = data['status']
+        property.status = new_status
         
+        if new_status in ['Sold', 'Rented', 'Off Market']:
+            for unit in property.units:
+                unit.status = 'Sold'
+                
     db.session.commit()
-    return jsonify({"message": "Property status updated"})
+    return jsonify({"message": "Property and Unit statuses updated"})
+
+@app.route('/api/properties/<int:id>', methods=['DELETE'])
+def delete_property(id):
+    prop = Property.query.get_or_404(id)
+    db.session.delete(prop)
+    db.session.commit()
+    return jsonify({"message": "Deleted"}), 200
 
 @app.route('/api/inquiries', methods=['POST'])
 def add_inquiry():

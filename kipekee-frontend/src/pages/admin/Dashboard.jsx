@@ -7,7 +7,11 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [properties, setProperties] = useState([]);
   const [inquiries, setInquiries] = useState([]);
+  const [testimonials, setTestimonials] = useState([]);
   const [activeTab, setActiveTab] = useState("overview");
+  const [isEditing, setIsEditing] = useState(false);
+  const [editId, setEditId] = useState(null);
+  const [expandedPropertyId, setExpandedPropertyId] = useState(null);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -15,12 +19,23 @@ const Dashboard = () => {
     location: "",
     type: "Villa",
     status: "For Sale",
+    suitability: "Home Living",
     beds: "",
     baths: "",
-    sqft: "",
+    sqm: "",
     description: "",
+    nearby_schools: "",
+    nearby_hospitals: "",
+    nearby_shopping: "",
+    rental_yield: "",
+    annual_growth: "",
+    market_comparison: "",
     is_featured: false,
   });
+
+  const [units, setUnits] = useState([]);
+  const [selectedAmenities, setSelectedAmenities] = useState([]);
+  const [imageFiles, setImageFiles] = useState([]);
 
   const allAmenities = [
     "Swimming Pool",
@@ -31,14 +46,13 @@ const Dashboard = () => {
     "High Speed Internet",
     "Parking",
   ];
-  const [selectedAmenities, setSelectedAmenities] = useState([]);
-  const [imageFiles, setImageFiles] = useState([]);
 
   useEffect(() => {
     const isAdmin = localStorage.getItem("isAdmin");
     if (!isAdmin) navigate("/login");
     fetchProperties();
     fetchInquiries();
+    fetchTestimonials();
   }, [navigate]);
 
   const fetchProperties = async () => {
@@ -59,6 +73,15 @@ const Dashboard = () => {
     }
   };
 
+  const fetchTestimonials = async () => {
+    try {
+      const res = await axios.get("http://127.0.0.1:5000/api/testimonials");
+      setTestimonials(res.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const handleStatusChange = async (id, newStatus) => {
     try {
       const updatedInquiries = inquiries.map((msg) =>
@@ -71,6 +94,32 @@ const Dashboard = () => {
     } catch (err) {
       console.error("Failed to update status");
       fetchInquiries();
+    }
+  };
+
+  const handleLiveStatusUpdate = async (id, newStatus) => {
+    const updatedProperties = properties.map((p) =>
+      p.id === id ? { ...p, status: newStatus } : p
+    );
+    setProperties(updatedProperties);
+    try {
+      await axios.patch(`http://127.0.0.1:5000/api/properties/${id}/status`, {
+        status: newStatus,
+      });
+    } catch (err) {
+      alert("Error updating status");
+      fetchProperties();
+    }
+  };
+
+  const handleUnitStatusChange = async (unitId, newStatus) => {
+    try {
+      await axios.patch(`http://127.0.0.1:5000/api/units/${unitId}/status`, {
+        status: newStatus,
+      });
+      fetchProperties();
+    } catch (err) {
+      alert("Error updating unit status");
     }
   };
 
@@ -95,6 +144,25 @@ const Dashboard = () => {
     setFormData({ ...formData, [e.target.name]: value });
   };
 
+  const addUnitField = () => {
+    setUnits([
+      ...units,
+      { type: "", price: "", size: "", beds: "", baths: "" },
+    ]);
+  };
+
+  const handleUnitChange = (index, field, value) => {
+    const newUnits = units.map((unit, i) =>
+      i === index ? { ...unit, [field]: value } : unit
+    );
+    setUnits(newUnits);
+  };
+
+  const removeUnitField = (index) => {
+    const newUnits = units.filter((_, i) => i !== index);
+    setUnits(newUnits);
+  };
+
   const handleAmenityChange = (amenity) => {
     if (selectedAmenities.includes(amenity)) {
       setSelectedAmenities(selectedAmenities.filter((a) => a !== amenity));
@@ -107,9 +175,80 @@ const Dashboard = () => {
     setImageFiles(e.target.files);
   };
 
+  const handleEdit = (property) => {
+    setIsEditing(true);
+    setEditId(property.id);
+    setFormData({
+      title: property.title,
+      price: property.price,
+      location: property.location,
+      type: property.type,
+      status: property.status,
+      suitability: property.suitability,
+      beds: property.beds,
+      baths: property.baths,
+      sqm: property.sqm,
+      description: property.description,
+      nearby_schools: property.nearby_schools,
+      nearby_hospitals: property.nearby_hospitals,
+      nearby_shopping: property.nearby_shopping,
+      rental_yield: property.rental_yield,
+      annual_growth: property.annual_growth,
+      market_comparison: property.market_comparison,
+      is_featured: property.is_featured,
+    });
+
+    if (property.units) {
+      const variants = property.units.filter(
+        (u) => u.price !== property.price || u.size !== property.sqm
+      );
+      setUnits(
+        variants.map((u) => ({
+          type: u.type,
+          price: u.price,
+          size: u.size,
+          beds: u.beds,
+          baths: u.baths || "",
+        }))
+      );
+    } else {
+      setUnits([]);
+    }
+
+    setSelectedAmenities(property.amenities || []);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const cancelEdit = () => {
+    setIsEditing(false);
+    setEditId(null);
+    setFormData({
+      title: "",
+      price: "",
+      location: "",
+      type: "Villa",
+      status: "For Sale",
+      suitability: "Home Living",
+      beds: "",
+      baths: "",
+      sqm: "",
+      description: "",
+      nearby_schools: "",
+      nearby_hospitals: "",
+      nearby_shopping: "",
+      rental_yield: "",
+      annual_growth: "",
+      market_comparison: "",
+      is_featured: false,
+    });
+    setUnits([]);
+    setSelectedAmenities([]);
+    setImageFiles([]);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (imageFiles.length === 0)
+    if (!isEditing && imageFiles.length === 0)
       return alert("Please upload at least one image!");
 
     const data = new FormData();
@@ -120,41 +259,34 @@ const Dashboard = () => {
       data.append("images", imageFiles[i]);
     }
 
-    try {
-      await axios.post("http://127.0.0.1:5000/api/properties", data, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      alert("Property Listed Successfully!");
-      fetchProperties();
-      setFormData({
-        title: "",
-        price: "",
-        location: "",
-        type: "Villa",
-        status: "For Sale",
-        beds: "",
-        baths: "",
-        sqft: "",
-        description: "",
-        is_featured: false,
-      });
-      setSelectedAmenities([]);
-      setImageFiles([]);
-    } catch (err) {
-      alert("Error adding property");
-    }
-  };
+    units.forEach((unit) => {
+      data.append("unit_types", unit.type);
+      data.append("unit_prices", unit.price);
+      data.append("unit_sizes", unit.size);
+      data.append("unit_beds", unit.beds);
+      data.append("unit_baths", unit.baths);
+    });
 
-  const handleMarkSold = async (id) => {
-    if (window.confirm("Mark this property as SOLD?")) {
-      try {
-        await axios.patch(`http://127.0.0.1:5000/api/properties/${id}/status`, {
-          status: "Sold",
+    try {
+      if (isEditing) {
+        await axios.put(
+          `http://127.0.0.1:5000/api/properties/${editId}`,
+          data,
+          {
+            headers: { "Content-Type": "multipart/form-data" },
+          }
+        );
+        alert("Property Updated Successfully!");
+      } else {
+        await axios.post("http://127.0.0.1:5000/api/properties", data, {
+          headers: { "Content-Type": "multipart/form-data" },
         });
-        fetchProperties();
-      } catch (err) {
-        alert("Error updating status");
+        alert("Property Listed Successfully!");
       }
+      fetchProperties();
+      cancelEdit();
+    } catch (err) {
+      alert("Error saving property");
     }
   };
 
@@ -191,45 +323,25 @@ const Dashboard = () => {
       </div>
 
       <div className="container mx-auto px-6 mt-8 mb-8">
-        <div className="flex gap-4 border-b border-gray-300 pb-4">
-          <button
-            onClick={() => setActiveTab("overview")}
-            className={`px-6 py-2 rounded-full font-bold text-sm transition-all ${
-              activeTab === "overview"
-                ? "bg-brand-navy text-white shadow-lg"
-                : "bg-white text-gray-500 hover:bg-gray-200"
-            }`}
-          >
-            Overview
-          </button>
-
-          <button
-            onClick={() => setActiveTab("properties")}
-            className={`px-6 py-2 rounded-full font-bold text-sm transition-all ${
-              activeTab === "properties"
-                ? "bg-brand-navy text-white shadow-lg"
-                : "bg-white text-gray-500 hover:bg-gray-200"
-            }`}
-          >
-            Manage Properties
-          </button>
-
-          <button
-            onClick={() => {
-              setActiveTab("inbox");
-              fetchInquiries();
-            }}
-            className={`px-6 py-2 rounded-full font-bold text-sm transition-all ${
-              activeTab === "inbox"
-                ? "bg-brand-navy text-white shadow-lg"
-                : "bg-white text-gray-500 hover:bg-gray-200"
-            }`}
-          >
-            Inbox{" "}
-            <span className="ml-2 bg-brand-gold text-brand-navy px-2 py-0.5 rounded-full text-xs">
-              {inquiries.length}
-            </span>
-          </button>
+        <div className="flex gap-4 border-b border-gray-300 pb-4 overflow-x-auto">
+          {["overview", "properties", "inbox"].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`px-6 py-2 rounded-full font-bold text-sm transition-all whitespace-nowrap capitalize ${
+                activeTab === tab
+                  ? "bg-brand-navy text-white shadow-lg"
+                  : "bg-white text-gray-500 hover:bg-gray-200"
+              }`}
+            >
+              {tab}{" "}
+              {tab === "inbox" && inquiries.length > 0 && (
+                <span className="ml-2 bg-brand-gold text-brand-navy px-2 py-0.5 rounded-full text-xs">
+                  {inquiries.length}
+                </span>
+              )}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -245,13 +357,24 @@ const Dashboard = () => {
       {activeTab === "properties" && (
         <div className="container mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-12">
           <div className="bg-white p-8 rounded-xl shadow-lg h-fit">
-            <h2 className="text-2xl font-bold text-brand-navy mb-6">
-              List New Property
-            </h2>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-brand-navy">
+                {isEditing ? "Edit Property" : "List New Property"}
+              </h2>
+              {isEditing && (
+                <button
+                  onClick={cancelEdit}
+                  className="text-sm text-red-500 font-bold underline"
+                >
+                  Cancel Edit
+                </button>
+              )}
+            </div>
+
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="border-2 border-dashed border-gray-300 p-6 rounded-lg text-center bg-gray-50">
                 <label className="block text-sm font-bold text-gray-400 uppercase mb-2">
-                  Property Gallery
+                  Property Gallery {isEditing && "(Upload to Append/Replace)"}
                 </label>
                 <input
                   type="file"
@@ -275,16 +398,65 @@ const Dashboard = () => {
                     Mark as Featured
                   </span>
                 </label>
+              </div>
 
-                <select
-                  name="status"
-                  value={formData.status}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="group">
+                  <label className="block text-xs font-bold text-gray-400 uppercase mb-2">
+                    Status Lifecycle
+                  </label>
+                  <select
+                    name="status"
+                    value={formData.status}
+                    onChange={handleInputChange}
+                    className="border p-3 rounded w-full focus:outline-none focus:border-brand-gold text-sm"
+                  >
+                    {["For Sale", "For Rent"].map((opt) => (
+                      <option key={opt} value={opt}>
+                        {opt}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="group">
+                  <label className="block text-xs font-bold text-gray-400 uppercase mb-2">
+                    Classification
+                  </label>
+                  <select
+                    name="suitability"
+                    value={formData.suitability}
+                    onChange={handleInputChange}
+                    className="border p-3 rounded w-full focus:outline-none focus:border-brand-gold text-sm"
+                  >
+                    {[
+                      "Home Living",
+                      "Investment",
+                      "Investment & Home Living",
+                    ].map((opt) => (
+                      <option key={opt} value={opt}>
+                        {opt}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="group">
+                <label className="block text-xs font-bold text-gray-400 uppercase mb-2">
+                  Base Price (Prefix with KES)
+                </label>
+                <input
+                  type="text"
+                  name="price"
+                  placeholder="KES 10M"
+                  value={formData.price}
                   onChange={handleInputChange}
-                  className="border p-2 rounded font-bold text-sm bg-white text-brand-navy outline-none focus:border-brand-gold"
-                >
-                  <option value="For Sale">For Sale</option>
-                  <option value="For Rent">For Rent</option>
-                </select>
+                  className="border p-3 rounded w-full focus:outline-none focus:border-brand-gold"
+                  required
+                />
+                <p className="text-[10px] text-gray-400 mt-1">
+                  This is the starting price displayed on the card.
+                </p>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -297,62 +469,200 @@ const Dashboard = () => {
                   className="border p-3 rounded w-full focus:outline-none focus:border-brand-gold"
                   required
                 />
-                <input
-                  type="text"
-                  name="price"
-                  placeholder="Price (e.g. KES 50M)"
-                  value={formData.price}
-                  onChange={handleInputChange}
-                  className="border p-3 rounded w-full focus:outline-none focus:border-brand-gold"
-                  required
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <input
-                  type="text"
-                  name="location"
-                  placeholder="Location"
-                  value={formData.location}
-                  onChange={handleInputChange}
-                  className="border p-3 rounded w-full focus:outline-none focus:border-brand-gold"
-                  required
-                />
                 <select
                   name="type"
                   value={formData.type}
                   onChange={handleInputChange}
                   className="border p-3 rounded w-full focus:outline-none focus:border-brand-gold"
                 >
-                  <option>Villa</option>
-                  <option>Apartment</option>
-                  <option>Penthouse</option>
-                  <option>Land</option>
+                  {["Villa", "Apartment", "Penthouse", "Land"].map((opt) => (
+                    <option key={opt}>{opt}</option>
+                  ))}
                 </select>
               </div>
-              <div className="grid grid-cols-3 gap-2">
+
+              <input
+                type="text"
+                name="location"
+                placeholder="Location"
+                value={formData.location}
+                onChange={handleInputChange}
+                className="border p-3 rounded w-full focus:outline-none focus:border-brand-gold"
+                required
+              />
+
+              <div className="bg-blue-50 p-6 rounded border border-blue-100 mb-4">
+                <h4 className="font-bold text-brand-navy text-sm uppercase mb-4">
+                  Property Configuration
+                </h4>
+                <div className="grid grid-cols-3 gap-2 mb-4">
+                  <input
+                    type="number"
+                    name="beds"
+                    placeholder="Base Beds"
+                    value={formData.beds}
+                    onChange={handleInputChange}
+                    className="border p-3 rounded text-sm focus:outline-none"
+                  />
+                  <input
+                    type="number"
+                    name="baths"
+                    placeholder="Base Baths"
+                    value={formData.baths}
+                    onChange={handleInputChange}
+                    className="border p-3 rounded text-sm focus:outline-none"
+                  />
+                  <input
+                    type="number"
+                    name="sqm"
+                    placeholder="Base SQM"
+                    value={formData.sqm}
+                    onChange={handleInputChange}
+                    className="border p-3 rounded text-sm focus:outline-none"
+                  />
+                </div>
+
+                <div className="space-y-3">
+                  <label className="block text-xs font-bold text-gray-400 uppercase">
+                    Multiple Units (Optional)
+                  </label>
+                  {units.map((unit, index) => (
+                    <div key={index} className="flex gap-2 items-center">
+                      <input
+                        type="text"
+                        placeholder="Type (e.g. 1 Bed)"
+                        value={unit.type}
+                        onChange={(e) =>
+                          handleUnitChange(index, "type", e.target.value)
+                        }
+                        className="border p-2 rounded text-xs w-1/4 focus:outline-none"
+                      />
+
+                      <div className="relative w-1/4">
+                        <span className="absolute left-2 top-2 text-[10px] font-bold text-gray-400">
+                          KES
+                        </span>
+                        <input
+                          type="text"
+                          placeholder="Price"
+                          value={unit.price}
+                          onChange={(e) =>
+                            handleUnitChange(index, "price", e.target.value)
+                          }
+                          className="border p-2 pl-8 rounded text-xs w-full focus:outline-none"
+                        />
+                      </div>
+
+                      <input
+                        type="number"
+                        placeholder="SQM"
+                        value={unit.size}
+                        onChange={(e) =>
+                          handleUnitChange(index, "size", e.target.value)
+                        }
+                        className="border p-2 rounded text-xs w-1/6 focus:outline-none"
+                      />
+                      <input
+                        type="number"
+                        placeholder="Bed"
+                        value={unit.beds}
+                        onChange={(e) =>
+                          handleUnitChange(index, "beds", e.target.value)
+                        }
+                        className="border p-2 rounded text-xs w-1/6 focus:outline-none"
+                      />
+                      <input
+                        type="number"
+                        placeholder="Bath"
+                        value={unit.baths}
+                        onChange={(e) =>
+                          handleUnitChange(index, "baths", e.target.value)
+                        }
+                        className="border p-2 rounded text-xs w-1/6 focus:outline-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeUnitField(index)}
+                        className="text-red-500 font-bold text-lg"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={addUnitField}
+                    className="text-xs font-bold text-brand-navy border border-brand-navy px-3 py-2 rounded border-dashed hover:bg-brand-navy hover:text-white transition"
+                  >
+                    + Add Unit Variant
+                  </button>
+                </div>
+              </div>
+
+              <div className="bg-gray-50 p-6 rounded border border-gray-200 space-y-4">
+                <h4 className="font-bold text-brand-navy text-sm uppercase">
+                  {formData.status === "For Rent"
+                    ? "Rental Costs & Analytics"
+                    : "Investment Analysis"}{" "}
+                  (Gated Data)
+                </h4>
+                <div className="grid grid-cols-3 gap-2">
+                  <input
+                    type="text"
+                    name="rental_yield"
+                    placeholder={
+                      formData.status === "For Rent"
+                        ? "Est. Utilities"
+                        : "Rental Yield"
+                    }
+                    value={formData.rental_yield}
+                    onChange={handleInputChange}
+                    className="border p-3 rounded w-full text-sm focus:outline-none"
+                  />
+                  <input
+                    type="text"
+                    name="annual_growth"
+                    placeholder={
+                      formData.status === "For Rent"
+                        ? "Move-in Cost"
+                        : "Appreciation"
+                    }
+                    value={formData.annual_growth}
+                    onChange={handleInputChange}
+                    className="border p-3 rounded w-full text-sm focus:outline-none"
+                  />
+                  <input
+                    type="text"
+                    name="market_comparison"
+                    placeholder="Vs Market"
+                    value={formData.market_comparison}
+                    onChange={handleInputChange}
+                    className="border p-3 rounded w-full text-sm focus:outline-none"
+                  />
+                </div>
                 <input
-                  type="number"
-                  name="beds"
-                  placeholder="Beds"
-                  value={formData.beds}
+                  type="text"
+                  name="nearby_schools"
+                  placeholder="Nearby Schools"
+                  value={formData.nearby_schools}
                   onChange={handleInputChange}
-                  className="border p-3 rounded focus:outline-none focus:border-brand-gold"
+                  className="border p-3 rounded w-full text-sm focus:outline-none"
                 />
                 <input
-                  type="number"
-                  name="baths"
-                  placeholder="Baths"
-                  value={formData.baths}
+                  type="text"
+                  name="nearby_hospitals"
+                  placeholder="Nearby Hospitals"
+                  value={formData.nearby_hospitals}
                   onChange={handleInputChange}
-                  className="border p-3 rounded focus:outline-none focus:border-brand-gold"
+                  className="border p-3 rounded w-full text-sm focus:outline-none"
                 />
                 <input
-                  type="number"
-                  name="sqft"
-                  placeholder="Sqft"
-                  value={formData.sqft}
+                  type="text"
+                  name="nearby_shopping"
+                  placeholder="Nearby Shopping"
+                  value={formData.nearby_shopping}
                   onChange={handleInputChange}
-                  className="border p-3 rounded focus:outline-none focus:border-brand-gold"
+                  className="border p-3 rounded w-full text-sm focus:outline-none"
                 />
               </div>
 
@@ -386,9 +696,8 @@ const Dashboard = () => {
                 className="border p-3 rounded w-full h-24 focus:outline-none focus:border-brand-gold"
                 required
               ></textarea>
-
               <button className="w-full bg-brand-gold text-white font-bold py-4 rounded hover:bg-yellow-600 transition shadow-lg uppercase text-sm tracking-widest">
-                Publish Listing
+                {isEditing ? "Update Listing" : "Publish Listing"}
               </button>
             </form>
           </div>
@@ -401,46 +710,126 @@ const Dashboard = () => {
               {properties.map((prop) => (
                 <div
                   key={prop.id}
-                  className="bg-white p-4 rounded-xl shadow-md flex gap-4 items-center border border-gray-100 hover:shadow-lg transition"
+                  className={`bg-white p-4 rounded-xl shadow-md border hover:shadow-lg transition block ${
+                    isEditing && editId === prop.id
+                      ? "border-brand-gold ring-1 ring-brand-gold"
+                      : "border-gray-100"
+                  }`}
                 >
-                  <img
-                    src={prop.images[0]}
-                    alt={prop.title}
-                    className="w-20 h-20 object-cover rounded-lg"
-                  />
-                  <div className="flex-1">
-                    <h4 className="font-bold text-brand-navy">{prop.title}</h4>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="text-xs text-gray-500">
-                        {prop.location}
-                      </span>
-                      {prop.is_featured && (
-                        <span className="bg-brand-gold text-white text-[10px] px-2 py-0.5 rounded uppercase font-bold">
-                          Featured
+                  <div className="flex gap-4 items-center">
+                    <img
+                      src={prop.images[0]}
+                      alt={prop.title}
+                      className="w-20 h-20 object-cover rounded-lg"
+                    />
+                    <div className="flex-1">
+                      <h4 className="font-bold text-brand-navy">
+                        {prop.title}
+                      </h4>
+                      <div className="flex items-center gap-2 mt-1">
+                        <p className="text-brand-navy font-bold text-sm">
+                          {prop.price}
+                        </p>
+                        <span className="text-[10px] px-2 py-0.5 bg-gray-100 rounded text-gray-600 border">
+                          {prop.suitability}
                         </span>
-                      )}
+                      </div>
+                      <div className="mt-2 flex items-center gap-2">
+                        <span className="text-[10px] uppercase font-bold text-gray-400">
+                          Status:
+                        </span>
+                        <select
+                          value={prop.status}
+                          onChange={(e) =>
+                            handleLiveStatusUpdate(prop.id, e.target.value)
+                          }
+                          className="text-xs font-bold border rounded px-2 py-1 cursor-pointer outline-none bg-blue-50 text-brand-navy border-blue-200"
+                        >
+                          {[
+                            "For Sale",
+                            "For Rent",
+                            "Sold",
+                            "Rented",
+                            "Back on Market",
+                            "Off Market",
+                          ].map((opt) => (
+                            <option key={opt} value={opt}>
+                              {opt}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
                     </div>
-                    <p className="text-brand-navy font-bold text-sm mt-1">
-                      {prop.price}
-                    </p>
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    {prop.status !== "Sold" && (
+                    <div className="flex flex-col gap-2">
                       <button
-                        onClick={() => handleMarkSold(prop.id)}
-                        className="text-brand-navy hover:bg-brand-navy hover:text-white border border-brand-navy font-bold text-xs uppercase px-3 py-1 rounded transition"
+                        onClick={() => handleEdit(prop)}
+                        className="text-brand-navy border border-brand-navy font-bold text-xs uppercase px-3 py-2 rounded hover:bg-brand-navy hover:text-white transition"
                       >
-                        Mark Sold
+                        Edit
                       </button>
-                    )}
 
-                    <button
-                      onClick={() => handleDeleteProperty(prop.id)}
-                      className="text-red-500 hover:text-white hover:bg-red-500 border border-red-200 font-bold text-xs uppercase px-3 py-1 rounded transition"
-                    >
-                      Delete
-                    </button>
+                      {prop.units && prop.units.length > 0 && (
+                        <button
+                          onClick={() =>
+                            setExpandedPropertyId(
+                              expandedPropertyId === prop.id ? null : prop.id
+                            )
+                          }
+                          className="text-gray-500 border border-gray-300 font-bold text-xs uppercase px-3 py-2 rounded hover:bg-gray-100 transition"
+                        >
+                          {expandedPropertyId === prop.id
+                            ? "Hide Units"
+                            : "Units"}
+                        </button>
+                      )}
+
+                      <button
+                        onClick={() => handleDeleteProperty(prop.id)}
+                        className="text-red-500 hover:text-white hover:bg-red-500 border border-red-200 font-bold text-xs uppercase px-3 py-2 rounded transition"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </div>
+
+                  {expandedPropertyId === prop.id && prop.units && (
+                    <div className="mt-4 pt-4 border-t border-gray-100 bg-gray-50 rounded-lg p-3">
+                      <h5 className="text-xs font-bold text-gray-400 uppercase mb-2">
+                        Unit Inventory
+                      </h5>
+                      <div className="space-y-2">
+                        {prop.units.map((unit) => (
+                          <div
+                            key={unit.id}
+                            className="flex justify-between items-center bg-white p-2 rounded border border-gray-200 shadow-sm"
+                          >
+                            <div>
+                              <span className="font-bold text-brand-navy text-sm block">
+                                {unit.type}
+                              </span>
+                              <span className="text-xs text-gray-500">
+                                {unit.price} • {unit.size} sqm
+                              </span>
+                            </div>
+                            <select
+                              value={unit.status}
+                              onChange={(e) =>
+                                handleUnitStatusChange(unit.id, e.target.value)
+                              }
+                              className={`text-xs font-bold px-2 py-1 rounded border outline-none cursor-pointer ${
+                                unit.status === "Sold"
+                                  ? "bg-red-100 text-red-600 border-red-200"
+                                  : "bg-green-100 text-green-600 border-green-200"
+                              }`}
+                            >
+                              <option value="Available">Available</option>
+                              <option value="Sold">Sold / Taken</option>
+                            </select>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
               {properties.length === 0 && (
@@ -464,19 +853,10 @@ const Dashboard = () => {
                 const relatedProperty = properties.find(
                   (p) => p.id === msg.property_id
                 );
-
                 return (
                   <div
                     key={msg.id}
-                    className={`border-b border-gray-100 pb-6 last:border-0 hover:bg-gray-50 p-4 rounded transition border-l-4 ${
-                      msg.status === "New"
-                        ? "border-l-blue-500"
-                        : msg.status === "Contacted"
-                        ? "border-l-yellow-500"
-                        : msg.status === "Closed"
-                        ? "border-l-green-500"
-                        : "border-l-transparent"
-                    }`}
+                    className="border-b border-gray-100 pb-6 last:border-0 hover:bg-gray-50 p-4 rounded transition border-l-4 border-l-blue-500"
                   >
                     <div className="flex justify-between items-start mb-2">
                       <div>
@@ -489,9 +869,7 @@ const Dashboard = () => {
                             onChange={(e) =>
                               handleStatusChange(msg.id, e.target.value)
                             }
-                            className={`text-xs font-bold px-3 py-1 rounded-full border cursor-pointer outline-none appearance-none ${getStatusColor(
-                              msg.status || "New"
-                            )}`}
+                            className="text-xs font-bold px-3 py-1 rounded-full border cursor-pointer outline-none appearance-none bg-blue-100 text-blue-800 border-blue-200"
                           >
                             <option value="New">● New</option>
                             <option value="Contacted">● Contacted</option>
@@ -513,68 +891,33 @@ const Dashboard = () => {
                         </div>
                       </div>
                       <span className="text-xs text-gray-400 font-medium bg-gray-100 px-2 py-1 rounded">
-                        {new Date(msg.created_at).toLocaleString("en-KE", {
-                          year: "numeric",
-                          month: "short",
-                          day: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
+                        {new Date(msg.created_at).toLocaleDateString()}
                       </span>
                     </div>
-
-                    <p className="text-gray-700 bg-gray-50 p-4 rounded-lg border border-gray-100 text-sm leading-relaxed mb-3 mt-2">
-                      {msg.message}
-                    </p>
-
-                    <div className="flex justify-between items-center mt-2">
-                      {msg.property_id ? (
-                        <span className="text-xs font-bold text-brand-navy bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
+                    {msg.property_id && (
+                      <div className="mb-2">
+                        <span className="bg-blue-50 text-brand-navy text-xs font-bold px-2 py-1 rounded border border-blue-100">
                           Re:{" "}
                           {relatedProperty
                             ? relatedProperty.title
                             : `Property #${msg.property_id}`}
                         </span>
-                      ) : (
-                        <span></span>
-                      )}
-
-                      <div className="flex gap-4">
-                        <a
-                          href={`mailto:${msg.email}`}
-                          className="text-xs font-bold text-brand-navy border border-brand-navy px-4 py-2 rounded hover:bg-brand-navy hover:text-white transition uppercase tracking-wider"
-                        >
-                          Reply
-                        </a>
-                        <button
-                          onClick={() => handleDeleteInquiry(msg.id)}
-                          className="text-xs font-bold text-red-500 border border-red-200 px-4 py-2 rounded hover:bg-red-500 hover:text-white transition uppercase tracking-wider"
-                        >
-                          Delete
-                        </button>
                       </div>
+                    )}
+                    <p className="text-gray-700 bg-gray-50 p-4 rounded-lg border border-gray-100 text-sm leading-relaxed mb-3 mt-2">
+                      {msg.message}
+                    </p>
+                    <div className="flex justify-end gap-4">
+                      <button
+                        onClick={() => handleDeleteInquiry(msg.id)}
+                        className="text-xs font-bold text-red-500 border border-red-200 px-4 py-2 rounded hover:bg-red-500 hover:text-white transition uppercase tracking-wider"
+                      >
+                        Delete
+                      </button>
                     </div>
                   </div>
                 );
               })}
-              {inquiries.length === 0 && (
-                <div className="flex flex-col items-center justify-center h-64 text-gray-400">
-                  <svg
-                    className="w-16 h-16 mb-4 opacity-20"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                    ></path>
-                  </svg>
-                  <p>No new messages.</p>
-                </div>
-              )}
             </div>
           </div>
         </div>

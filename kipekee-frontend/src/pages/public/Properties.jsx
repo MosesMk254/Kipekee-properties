@@ -13,10 +13,15 @@ const Properties = () => {
   const [filterLocation, setFilterLocation] = useState(
     state?.filterLocation || "All"
   );
-  const [filterType, setFilterType] = useState("All");
-  const [filterStatus, setFilterStatus] = useState("All");
+  const [filterType, setFilterType] = useState(state?.filterType || "All");
+  const [filterStatus, setFilterStatus] = useState(
+    state?.filterStatus || "All"
+  );
+  const [filterSuitability, setFilterSuitability] = useState("All");
+  const [filterBeds, setFilterBeds] = useState(state?.filterBeds || "All");
+
   const [priceRange, setPriceRange] = useState({ min: 0, max: 500000000 });
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(state?.searchQuery || "");
 
   const [filteredProperties, setFilteredProperties] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -47,18 +52,38 @@ const Properties = () => {
     let result = properties;
 
     if (searchQuery) {
-      result = result.filter((p) =>
-        p.title.toLowerCase().includes(searchQuery.toLowerCase())
+      const q = searchQuery.toLowerCase();
+      result = result.filter(
+        (p) =>
+          p.title.toLowerCase().includes(q) ||
+          p.location.toLowerCase().includes(q) ||
+          p.description.toLowerCase().includes(q)
       );
     }
+
     if (filterLocation !== "All") {
-      result = result.filter((p) => p.location.includes(filterLocation));
+      result = result.filter((p) =>
+        p.location.toLowerCase().includes(filterLocation.toLowerCase())
+      );
     }
     if (filterType !== "All") {
       result = result.filter((p) => p.type === filterType);
     }
     if (filterStatus !== "All") {
       result = result.filter((p) => p.status === filterStatus);
+    }
+    if (filterSuitability !== "All") {
+      result = result.filter((p) => p.suitability === filterSuitability);
+    }
+
+    if (filterBeds !== "All") {
+      result = result.filter((p) => {
+        const mainMatch = p.beds == filterBeds;
+        const unitMatch =
+          p.units &&
+          p.units.some((u) => u.beds == filterBeds && u.status === "Available");
+        return mainMatch || unitMatch;
+      });
     }
 
     const cleanPrice = (priceStr) => {
@@ -80,6 +105,8 @@ const Properties = () => {
     filterLocation,
     filterType,
     filterStatus,
+    filterSuitability,
+    filterBeds,
     priceRange,
     searchQuery,
     properties,
@@ -96,7 +123,7 @@ const Properties = () => {
   const locations = [
     "All",
     ...new Set(
-      properties.map((p) => (p.location ? p.location.split(", ")[0] : ""))
+      properties.map((p) => (p.location ? p.location.split(",")[0] : ""))
     ),
   ].filter((l) => l);
   const types = ["All", ...new Set(properties.map((p) => p.type))].filter(
@@ -160,6 +187,8 @@ const Properties = () => {
                     setFilterLocation("All");
                     setFilterType("All");
                     setFilterStatus("All");
+                    setFilterSuitability("All");
+                    setFilterBeds("All");
                     setSearchQuery("");
                     setPriceRange({ min: 0, max: 500000000 });
                   }}
@@ -180,6 +209,24 @@ const Properties = () => {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   value={searchQuery}
                 />
+              </div>
+
+              <div className="mb-8">
+                <label className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3 block">
+                  Classification
+                </label>
+                <select
+                  className="w-full bg-gray-50 border border-gray-200 rounded p-3 text-sm outline-none"
+                  onChange={(e) => setFilterSuitability(e.target.value)}
+                  value={filterSuitability}
+                >
+                  <option value="All">All Classifications</option>
+                  <option value="Investment">Investment</option>
+                  <option value="Home Living">Home Living</option>
+                  <option value="Investment & Home Living">
+                    Investment & Home Living
+                  </option>
+                </select>
               </div>
 
               <div className="mb-8">
@@ -212,9 +259,10 @@ const Properties = () => {
                   onChange={(e) => setFilterLocation(e.target.value)}
                   value={filterLocation}
                 >
+                  <option value="All">All Locations</option>
                   {locations.map((loc) => (
                     <option key={loc} value={loc}>
-                      {loc === "All" ? "All Locations" : loc}
+                      {loc}
                     </option>
                   ))}
                 </select>
@@ -229,11 +277,30 @@ const Properties = () => {
                   onChange={(e) => setFilterType(e.target.value)}
                   value={filterType}
                 >
+                  <option value="All">All Types</option>
                   {types.map((type) => (
                     <option key={type} value={type}>
-                      {type === "All" ? "All Types" : type}
+                      {type}
                     </option>
                   ))}
+                </select>
+              </div>
+
+              <div className="mb-8">
+                <label className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3 block">
+                  Bedrooms
+                </label>
+                <select
+                  className="w-full bg-gray-50 border border-gray-200 rounded p-3 text-sm outline-none"
+                  onChange={(e) => setFilterBeds(e.target.value)}
+                  value={filterBeds}
+                >
+                  <option value="All">Any Size</option>
+                  <option value="0">Studio</option>
+                  <option value="1">1 Bedroom</option>
+                  <option value="2">2 Bedrooms</option>
+                  <option value="3">3 Bedrooms</option>
+                  <option value="4">4+ Bedrooms</option>
                 </select>
               </div>
 

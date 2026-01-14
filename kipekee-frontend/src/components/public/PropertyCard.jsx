@@ -4,7 +4,50 @@ import { useState, useEffect } from "react";
 const PropertyCard = ({ property }) => {
   const [isLiked, setIsLiked] = useState(false);
 
-  const isSold = property.status === "Sold";
+  const isOffMarket = ["Sold", "Rented", "Off Market"].includes(
+    property.status
+  );
+
+  const availableUnits = property.units
+    ? property.units.filter((u) => u.status === "Available")
+    : [];
+
+  let displayPrice = property.price;
+
+  if (availableUnits.length > 1) {
+    const parsePrice = (str) => {
+      if (!str) return Infinity;
+      let clean = str.replace(/KES|Ksh|,|\s/gi, "").toUpperCase();
+      let multiplier = 1;
+
+      if (clean.includes("M")) {
+        multiplier = 1000000;
+        clean = clean.replace("M", "");
+      } else if (clean.includes("K")) {
+        multiplier = 1000;
+        clean = clean.replace("K", "");
+      }
+
+      const val = parseFloat(clean);
+      return isNaN(val) ? Infinity : val * multiplier;
+    };
+
+    const sortedUnits = [...availableUnits].sort(
+      (a, b) => parsePrice(a.price) - parsePrice(b.price)
+    );
+    const cheapestUnit = sortedUnits[0];
+
+    let priceStr = cheapestUnit.price.trim();
+    if (
+      !priceStr.toUpperCase().startsWith("KES") &&
+      !priceStr.toUpperCase().startsWith("KSH")
+    ) {
+      priceStr = `KES ${priceStr}`;
+    }
+    displayPrice = `From ${priceStr}`;
+  }
+
+  const displayBeds = property.beds === 0 ? "Studio" : `${property.beds} Beds`;
 
   useEffect(() => {
     const savedLikes = JSON.parse(
@@ -31,8 +74,21 @@ const PropertyCard = ({ property }) => {
     setIsLiked(!isLiked);
   };
 
+  const getSuitabilityColor = (suitability) => {
+    switch (suitability) {
+      case "Investment":
+        return "bg-green-100 text-green-700 border-green-200";
+      case "Home Living":
+        return "bg-blue-100 text-blue-700 border-blue-200";
+      case "Investment & Home Living":
+        return "bg-purple-100 text-purple-700 border-purple-200";
+      default:
+        return "bg-gray-100 text-gray-600 border-gray-200";
+    }
+  };
+
   return (
-    <div className="group relative rounded-3xl overflow-hidden transition-all duration-500 hover:-translate-y-3 hover:shadow-2xl bg-white">
+    <div className="group relative rounded-3xl overflow-hidden transition-all duration-500 hover:-translate-y-3 hover:shadow-2xl bg-white border border-gray-100">
       <Link
         to={`/properties/${property.id}`}
         className="block relative h-[340px] overflow-hidden"
@@ -41,24 +97,29 @@ const PropertyCard = ({ property }) => {
           src={property.images ? property.images[0] : property.image_url}
           alt={property.title}
           className={`w-full h-full object-cover transition-transform duration-[2000ms] group-hover:scale-110 ${
-            isSold ? "grayscale" : ""
+            isOffMarket ? "grayscale" : ""
           }`}
         />
-
         <div className="absolute inset-0 bg-black/30 transition-opacity duration-500 group-hover:opacity-10"></div>
         <div className="absolute inset-0 bg-gradient-to-t from-brand-navy/80 via-transparent to-transparent z-0"></div>
 
         <div className="absolute top-5 left-5 z-10">
           <div
             className={`backdrop-blur-md border border-white/20 text-white text-xs font-bold px-4 py-2 uppercase tracking-wider rounded-full shadow-lg ${
-              isSold ? "bg-red-600" : "bg-white/30"
+              property.status === "Sold"
+                ? "bg-red-600"
+                : property.status === "Rented"
+                ? "bg-orange-500"
+                : property.status === "Off Market"
+                ? "bg-gray-600"
+                : "bg-white/30"
             }`}
           >
             {property.status}
           </div>
         </div>
 
-        {!isSold && (
+        {!isOffMarket && (
           <button
             onClick={toggleLike}
             className={`absolute top-5 right-5 z-20 bg-white/30 backdrop-blur-md border border-white/20 p-3 rounded-full transition-all duration-300 shadow-lg group-hover:scale-110 ${
@@ -84,19 +145,24 @@ const PropertyCard = ({ property }) => {
           </button>
         )}
 
-        <div className="absolute bottom-24 left-6 z-20">
+        <div className="absolute bottom-10 left-6 z-20 pr-6">
           <h4
-            className={`text-2xl md:text-3xl font-heading font-bold text-white drop-shadow-lg ${
-              isSold ? "line-through opacity-70" : ""
+            className={`text-2xl font-heading font-bold text-white drop-shadow-lg mb-1 ${
+              isOffMarket ? "line-through opacity-70" : ""
             }`}
           >
-            {property.price}
+            {displayPrice}
           </h4>
+          {property.units && property.units.length > 1 && (
+            <p className="text-white/80 text-xs font-bold uppercase tracking-wider">
+              Multiple Unit Types Available
+            </p>
+          )}
         </div>
       </Link>
 
-      <div className="relative z-10 -mt-20 mx-4 p-6 bg-white/80 backdrop-blur-xl border-t border-l border-r border-white/60 rounded-t-3xl rounded-b-3xl shadow-[0_-10px_30px_-15px_rgba(0,0,0,0.3)] transition-all duration-500 group-hover:bg-white/95">
-        <div className="mb-6">
+      <div className="relative z-10 -mt-6 mx-4 p-6 bg-white/90 backdrop-blur-xl border border-white/60 rounded-3xl shadow-[0_10px_30px_-10px_rgba(0,0,0,0.1)] transition-all duration-500 group-hover:bg-white">
+        <div className="mb-4">
           <h3 className="text-xl font-heading font-bold text-brand-navy mb-2 truncate group-hover:text-brand-gold transition-colors">
             <Link to={`/properties/${property.id}`}>{property.title}</Link>
           </h3>
@@ -117,12 +183,11 @@ const PropertyCard = ({ property }) => {
           </p>
         </div>
 
-        {!isSold ? (
+        {!isOffMarket ? (
           <div className="flex items-center justify-between py-4 border-t border-brand-navy/10 border-b mb-4">
             <div className="flex items-center flex-col md:flex-row">
               <span className="text-sm font-bold text-brand-navy">
-                {property.beds}{" "}
-                <span className="font-medium text-brand-navy/60">Beds</span>
+                {displayBeds}
               </span>
             </div>
             <div className="flex items-center flex-col md:flex-row">
@@ -133,39 +198,32 @@ const PropertyCard = ({ property }) => {
             </div>
             <div className="flex items-center flex-col md:flex-row">
               <span className="text-sm font-bold text-brand-navy">
-                {property.sqft}{" "}
-                <span className="font-medium text-brand-navy/60">sqft</span>
+                {property.sqm}{" "}
+                <span className="font-medium text-brand-navy/60">sqm</span>
               </span>
             </div>
           </div>
         ) : (
           <div className="py-4 border-t border-brand-navy/10 border-b mb-4 text-center">
-            <span className="text-red-500 font-bold uppercase tracking-widest text-sm">
-              Successfully Sold
+            <span className="text-gray-500 font-bold uppercase tracking-widest text-xs">
+              This property is currently {property.status}
             </span>
           </div>
         )}
 
-        <div className="flex items-center justify-between">
-          <div className="flex items-center">
-            <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden mr-3 border-2 border-white shadow-sm">
-              <img
-                src={`https://i.pravatar.cc/150?u=${property.id}`}
-                alt="Agent"
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div>
-              <span className="text-xs font-bold text-brand-navy block">
-                Sarah Jenkins
-              </span>
-            </div>
-          </div>
+        <div className="flex items-center justify-between mt-2 pt-2">
+          <span
+            className={`text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider border ${getSuitabilityColor(
+              property.suitability
+            )}`}
+          >
+            {property.suitability || "Home Living"}
+          </span>
           <Link
             to={`/properties/${property.id}`}
             className="text-xs text-brand-gold font-bold uppercase tracking-widest hover:text-brand-navy transition-colors cursor-pointer border-b-2 border-transparent hover:border-brand-gold py-1"
           >
-            {isSold ? "View Archive" : "View Details"}
+            {isOffMarket ? "View Archive" : "View Details"}
           </Link>
         </div>
       </div>

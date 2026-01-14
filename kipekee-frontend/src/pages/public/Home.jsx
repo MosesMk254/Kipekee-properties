@@ -20,7 +20,8 @@ const Home = () => {
 
       <LocationGrid />
 
-      <GoogleReviews />
+      {/*   Testimonial Hidden as per client request */}
+      {/* <GoogleReviews /> */}
 
       <ContactSection />
     </div>
