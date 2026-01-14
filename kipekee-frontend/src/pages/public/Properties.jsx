@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
+import { motion, AnimatePresence } from "framer-motion";
 import PropertyCard from "../../components/public/PropertyCard";
 
 const Properties = () => {
@@ -153,6 +154,21 @@ const Properties = () => {
   ].filter((l) => l);
   const types = [...new Set(properties.map((p) => p.type))].filter((t) => t);
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.4 } },
+  };
+
   if (loading)
     return (
       <div className="min-h-screen flex justify-center items-center bg-brand-gray">
@@ -169,7 +185,12 @@ const Properties = () => {
   return (
     <div className="bg-brand-gray min-h-screen pt-32 pb-20">
       <div className="container mx-auto px-6">
-        <div className="text-center mb-10 md:mb-16 animate-fade-in-up">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-10 md:mb-16"
+        >
           <h5 className="text-brand-gold font-bold tracking-widest uppercase mb-2 text-sm">
             Portfolio
           </h5>
@@ -177,7 +198,7 @@ const Properties = () => {
             Exclusive Listings
           </h1>
           <div className="w-24 h-1 bg-brand-gold mx-auto mt-6 rounded-full"></div>
-        </div>
+        </motion.div>
 
         <div className="flex flex-col lg:flex-row gap-12 relative">
           <div className="lg:hidden mb-4">
@@ -193,7 +214,10 @@ const Properties = () => {
             </button>
           </div>
 
-          <div
+          <motion.div
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
             id="mobile-filters"
             className="hidden lg:block w-full lg:w-1/3 transition-all duration-300"
           >
@@ -325,7 +349,7 @@ const Properties = () => {
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
 
           <div className="w-full lg:w-2/3">
             <div className="mb-8 flex justify-between items-center bg-white p-4 rounded-lg border border-gray-100 shadow-sm">
@@ -333,22 +357,43 @@ const Properties = () => {
                 Found <strong>{filteredProperties.length}</strong> Properties
               </span>
             </div>
-            {currentItems.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                {currentItems.map((prop) => (
-                  <PropertyCard
-                    key={prop.id}
-                    property={{ ...prop, image: prop.image_url }}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-24 bg-white rounded-2xl shadow-sm border border-gray-100">
-                <h3 className="text-xl font-bold text-brand-navy">
-                  No Results Found
-                </h3>
-              </div>
-            )}
+
+            <AnimatePresence mode="wait">
+              {currentItems.length > 0 ? (
+                <motion.div
+                  key={
+                    currentPage +
+                    filterBeds +
+                    filterType +
+                    filterLocation +
+                    searchQuery
+                  }
+                  variants={containerVariants}
+                  initial="hidden"
+                  animate="show"
+                  className="grid grid-cols-1 md:grid-cols-2 gap-10"
+                >
+                  {currentItems.map((prop) => (
+                    <motion.div key={prop.id} variants={itemVariants}>
+                      <PropertyCard
+                        property={{ ...prop, image: prop.image_url }}
+                      />
+                    </motion.div>
+                  ))}
+                </motion.div>
+              ) : (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="text-center py-24 bg-white rounded-2xl shadow-sm border border-gray-100"
+                >
+                  <h3 className="text-xl font-bold text-brand-navy">
+                    No Results Found
+                  </h3>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             {totalPages > 1 && (
               <div className="mt-16 flex justify-center space-x-2">
                 {[...Array(totalPages)].map((_, i) => (
