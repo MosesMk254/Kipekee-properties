@@ -119,9 +119,13 @@ const PropertyDetails = () => {
     return `Our proprietary analysis indicates strong fundamentals for this location, ${amenitiesText}. ${marketText} Combined with projected appreciation, this property represents a compelling opportunity for ${property.suitability.toLowerCase()}.`;
   };
 
+  const analyticsDisplay =
+    property.analytics_text && property.analytics_text.length > 10
+      ? property.analytics_text
+      : generateAnalyticsText();
+
   return (
     <div className="bg-white min-h-screen pt-32 pb-20">
-      {/* ... Header and Images (Same as before) ... */}
       <div className="container mx-auto px-6 mb-12">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end">
           <div>
@@ -219,7 +223,6 @@ const PropertyDetails = () => {
 
       <div className="container mx-auto px-6 grid grid-cols-1 lg:grid-cols-3 gap-12">
         <div className="lg:col-span-2">
-          {/* ... Stats & Units (Same as before) ... */}
           <div className="grid grid-cols-3 gap-6 mb-12 bg-gray-50 p-8 rounded-2xl border border-gray-100">
             <div className="text-center">
               <div className="font-bold text-2xl text-brand-navy">
@@ -321,7 +324,6 @@ const PropertyDetails = () => {
           </div>
 
           <div className="mb-12 pt-8 border-t border-gray-100 relative overflow-hidden rounded-2xl">
-            {/* ... Analytics (Same as before) ... */}
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-brand-navy">
                 Market Analytics & Investment Data
@@ -338,10 +340,11 @@ const PropertyDetails = () => {
               }`}
             >
               <div className="mb-6">
-                <p className="text-sm text-gray-500 italic border-l-4 border-brand-gold pl-4 py-2 bg-gray-50 rounded-r">
-                  {generateAnalyticsText()}
+                <p className="text-sm text-gray-500 italic border-l-4 border-brand-gold pl-4 py-2 bg-gray-50 rounded-r whitespace-pre-line">
+                  {analyticsDisplay}
                 </p>
               </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
                 <div className="bg-white border border-gray-200 p-6 rounded-xl shadow-sm">
                   <h4 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">
@@ -641,7 +644,6 @@ const PropertyDetails = () => {
                       className="w-full bg-gray-50 border border-gray-200 rounded p-3 text-sm focus:border-brand-navy outline-none"
                     />
 
-                    {/* FIX: Filter Sold Units */}
                     {property.units && property.units.length > 1 && (
                       <select
                         value={contactForm.selectedUnit}

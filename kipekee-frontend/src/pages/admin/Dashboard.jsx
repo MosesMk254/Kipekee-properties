@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import DashboardHome from "./DashboardHome";
+import DashboardTestimonials from "./DashboardTestimonials";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -12,6 +13,12 @@ const Dashboard = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editId, setEditId] = useState(null);
   const [expandedPropertyId, setExpandedPropertyId] = useState(null);
+
+  const [profileData, setProfileData] = useState({
+    email: "",
+    current_password: "",
+    new_password: "",
+  });
 
   const [formData, setFormData] = useState({
     title: "",
@@ -30,6 +37,7 @@ const Dashboard = () => {
     rental_yield: "",
     annual_growth: "",
     market_comparison: "",
+    analytics_text: "",
     is_featured: false,
   });
 
@@ -97,6 +105,18 @@ const Dashboard = () => {
     }
   };
 
+  const handleUpdateProfile = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.put("http://127.0.0.1:5000/api/admin/update", profileData);
+      alert("Profile Updated Successfully. Please login again.");
+      localStorage.removeItem("isAdmin");
+      navigate("/login");
+    } catch (err) {
+      alert("Failed to update profile. Check your current password.");
+    }
+  };
+
   const handleLiveStatusUpdate = async (id, newStatus) => {
     const updatedProperties = properties.map((p) =>
       p.id === id ? { ...p, status: newStatus } : p
@@ -123,6 +143,7 @@ const Dashboard = () => {
     }
   };
 
+  // --- COLOR LOGIC ADDED HERE ---
   const getStatusColor = (status) => {
     switch (status) {
       case "New":
@@ -195,6 +216,7 @@ const Dashboard = () => {
       rental_yield: property.rental_yield,
       annual_growth: property.annual_growth,
       market_comparison: property.market_comparison,
+      analytics_text: property.analytics_text || "",
       is_featured: property.is_featured,
     });
 
@@ -239,6 +261,7 @@ const Dashboard = () => {
       rental_yield: "",
       annual_growth: "",
       market_comparison: "",
+      analytics_text: "",
       is_featured: false,
     });
     setUnits([]);
@@ -252,7 +275,13 @@ const Dashboard = () => {
       return alert("Please upload at least one image!");
 
     const data = new FormData();
-    Object.keys(formData).forEach((key) => data.append(key, formData[key]));
+    Object.keys(formData).forEach((key) => {
+      if (key === "price") {
+        data.append(key, `KES ${formData[key]}`);
+      } else {
+        data.append(key, formData[key]);
+      }
+    });
     data.append("amenities", selectedAmenities.join(","));
 
     for (let i = 0; i < imageFiles.length; i++) {
@@ -309,7 +338,7 @@ const Dashboard = () => {
       <div className="bg-brand-navy text-white p-6 shadow-lg flex justify-between items-center sticky top-0 z-50">
         <h1 className="text-xl font-bold font-heading">Admin Dashboard</h1>
         <div className="flex items-center gap-4">
-          <span className="text-sm text-gray-300">Welcome, Sarah</span>
+          <span className="text-sm text-gray-300">Welcome, Admin</span>
           <button
             onClick={() => {
               localStorage.removeItem("isAdmin");
@@ -324,7 +353,7 @@ const Dashboard = () => {
 
       <div className="container mx-auto px-6 mt-8 mb-8">
         <div className="flex gap-4 border-b border-gray-300 pb-4 overflow-x-auto">
-          {["overview", "properties", "inbox"].map((tab) => (
+          {["overview", "properties", "inbox", "settings"].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -443,17 +472,32 @@ const Dashboard = () => {
 
               <div className="group">
                 <label className="block text-xs font-bold text-gray-400 uppercase mb-2">
-                  Base Price (Prefix with KES)
+                  Base Price
                 </label>
-                <input
-                  type="text"
-                  name="price"
-                  placeholder="KES 10M"
-                  value={formData.price}
-                  onChange={handleInputChange}
-                  className="border p-3 rounded w-full focus:outline-none focus:border-brand-gold"
-                  required
-                />
+
+                <div className="relative w-full">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400 pointer-events-none">
+                    KES
+                  </span>
+
+                  <input
+                    type="text"
+                    name="price"
+                    placeholder="10,000,000"
+                    value={formData.price}
+                    onChange={(e) => {
+                      const digitsOnly = e.target.value.replace(/[^\d]/g, "");
+                      const formatted = digitsOnly.replace(
+                        /\B(?=(\d{3})+(?!\d))/g,
+                        ","
+                      );
+                      setFormData({ ...formData, price: formatted });
+                    }}
+                    className="border p-3 pl-12 rounded w-full focus:outline-none focus:border-brand-gold font-bold text-brand-navy"
+                    required
+                  />
+                </div>
+
                 <p className="text-[10px] text-gray-400 mt-1">
                   This is the starting price displayed on the card.
                 </p>
@@ -606,6 +650,20 @@ const Dashboard = () => {
                     : "Investment Analysis"}{" "}
                   (Gated Data)
                 </h4>
+
+                <div className="w-full">
+                  <label className="block text-xs font-bold text-gray-400 uppercase mb-2">
+                    Manual Analysis Paragraph (Optional)
+                  </label>
+                  <textarea
+                    name="analytics_text"
+                    placeholder="Write your own market analysis here. If left blank, the system will auto-generate one."
+                    value={formData.analytics_text}
+                    onChange={handleInputChange}
+                    className="border p-3 rounded w-full text-sm focus:outline-none h-24"
+                  ></textarea>
+                </div>
+
                 <div className="grid grid-cols-3 gap-2">
                   <input
                     type="text"
@@ -869,7 +927,9 @@ const Dashboard = () => {
                             onChange={(e) =>
                               handleStatusChange(msg.id, e.target.value)
                             }
-                            className="text-xs font-bold px-3 py-1 rounded-full border cursor-pointer outline-none appearance-none bg-blue-100 text-blue-800 border-blue-200"
+                            className={`text-xs font-bold px-3 py-1 rounded-full border cursor-pointer outline-none appearance-none ${getStatusColor(
+                              msg.status || "New"
+                            )}`}
                           >
                             <option value="New">● New</option>
                             <option value="Contacted">● Contacted</option>
@@ -919,6 +979,85 @@ const Dashboard = () => {
                 );
               })}
             </div>
+          </div>
+        </div>
+      )}
+
+      {activeTab === "testimonials" && (
+        <div className="container mx-auto px-6">
+          <h2 className="text-2xl font-bold text-brand-navy mb-6">
+            Manage Reviews
+          </h2>
+          <DashboardTestimonials
+            testimonials={testimonials}
+            fetchTestimonials={fetchTestimonials}
+          />
+        </div>
+      )}
+
+      {activeTab === "settings" && (
+        <div className="container mx-auto px-6 max-w-2xl">
+          <div className="bg-white rounded-xl shadow-lg p-8">
+            <h2 className="text-2xl font-bold text-brand-navy mb-6">
+              Account Settings
+            </h2>
+            <p className="text-sm text-gray-500 mb-6">
+              Update your login credentials here.
+            </p>
+            <form onSubmit={handleUpdateProfile} className="space-y-6">
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  New Email Address (Optional)
+                </label>
+                <input
+                  type="email"
+                  value={profileData.email}
+                  onChange={(e) =>
+                    setProfileData({ ...profileData, email: e.target.value })
+                  }
+                  className="w-full border border-gray-300 p-3 rounded focus:outline-none focus:border-brand-navy"
+                  placeholder="admin@kipekee.com"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  Current Password (Required)
+                </label>
+                <input
+                  type="password"
+                  required
+                  value={profileData.current_password}
+                  onChange={(e) =>
+                    setProfileData({
+                      ...profileData,
+                      current_password: e.target.value,
+                    })
+                  }
+                  className="w-full border border-gray-300 p-3 rounded focus:outline-none focus:border-brand-navy"
+                  placeholder="••••••••"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  New Password (Optional)
+                </label>
+                <input
+                  type="password"
+                  value={profileData.new_password}
+                  onChange={(e) =>
+                    setProfileData({
+                      ...profileData,
+                      new_password: e.target.value,
+                    })
+                  }
+                  className="w-full border border-gray-300 p-3 rounded focus:outline-none focus:border-brand-navy"
+                  placeholder="••••••••"
+                />
+              </div>
+              <button className="w-full bg-brand-navy text-white font-bold py-4 rounded hover:bg-brand-gold transition shadow-lg uppercase text-sm tracking-widest">
+                Save Changes
+              </button>
+            </form>
           </div>
         </div>
       )}

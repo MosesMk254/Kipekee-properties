@@ -93,7 +93,7 @@ const Contact = () => {
         </svg>
       ),
       title: "Give Us a Call",
-      text: "+254 700 123 456",
+      text: "+254 791 869 625",
       subtext: "Support available 24/7",
     },
     {
@@ -113,7 +113,7 @@ const Contact = () => {
         </svg>
       ),
       title: "Send an Email",
-      text: "info@kipekeeproperties.com",
+      text: "info@kipekee.com",
       subtext: "We reply within 2 hours",
     },
   ];

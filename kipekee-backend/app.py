@@ -8,7 +8,7 @@ from datetime import datetime
 import uuid
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///kipekee.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -18,6 +18,12 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
+
+def safe_int(value):
+    try:
+        return int(value)
+    except (ValueError, TypeError):
+        return 0
 
 class Unit(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -52,6 +58,7 @@ class Property(db.Model):
     rental_yield = db.Column(db.String(50), default="0%")
     annual_growth = db.Column(db.String(50), default="0%")
     market_comparison = db.Column(db.String(50), default="Average")
+    analytics_text = db.Column(db.Text, default="") 
     
     nearby_schools = db.Column(db.String(200), default="")
     nearby_hospitals = db.Column(db.String(200), default="")
@@ -83,6 +90,7 @@ class Property(db.Model):
             'rental_yield': self.rental_yield,
             'annual_growth': self.annual_growth,
             'market_comparison': self.market_comparison,
+            'analytics_text': self.analytics_text,
             'nearby_schools': self.nearby_schools,
             'nearby_hospitals': self.nearby_hospitals,
             'nearby_shopping': self.nearby_shopping,
@@ -143,6 +151,23 @@ def init_db():
             db.session.add(admin)
             db.session.commit()
 
+@app.route('/api/admin/update', methods=['PUT'])
+def update_admin():
+    data = request.get_json()
+    user = User.query.first()
+    
+    if 'current_password' in data and not user.check_password(data['current_password']):
+        return jsonify({"message": "Incorrect current password"}), 401
+
+    if 'email' in data and data['email']:
+        user.email = data['email']
+    
+    if 'new_password' in data and data['new_password']:
+        user.set_password(data['new_password'])
+        
+    db.session.commit()
+    return jsonify({"message": "Profile updated successfully"})
+
 @app.route('/api/login', methods=['POST'])
 def login():
     data = request.get_json()
@@ -169,6 +194,7 @@ def get_single_property(id):
 def update_property(id):
     try:
         prop = Property.query.get_or_404(id)
+        
         prop.title = request.form['title']
         prop.price = request.form['price']
         prop.location = request.form['location']
@@ -178,12 +204,15 @@ def update_property(id):
         prop.rental_yield = request.form.get('rental_yield', 'N/A')
         prop.annual_growth = request.form.get('annual_growth', 'N/A')
         prop.market_comparison = request.form.get('market_comparison', 'Average')
+        prop.analytics_text = request.form.get('analytics_text', '')
         prop.nearby_schools = request.form.get('nearby_schools', '')
         prop.nearby_hospitals = request.form.get('nearby_hospitals', '')
         prop.nearby_shopping = request.form.get('nearby_shopping', '')
-        prop.beds = request.form['beds']
-        prop.baths = request.form['baths']
-        prop.sqm = request.form['sqm']
+        
+        prop.beds = safe_int(request.form.get('beds'))
+        prop.baths = safe_int(request.form.get('baths'))
+        prop.sqm = safe_int(request.form.get('sqm'))
+        
         prop.description = request.form['description']
         prop.amenities = request.form['amenities']
         prop.is_featured = request.form.get('is_featured') == 'true'
@@ -200,14 +229,16 @@ def update_property(id):
 
         Unit.query.filter_by(property_id=prop.id).delete()
         
-        base_unit_type = "Studio" if int(request.form['beds']) == 0 else f"{request.form['beds']} Bed Base"
+        base_beds = safe_int(request.form.get('beds'))
+        base_unit_type = "Studio" if base_beds == 0 else f"{base_beds} Bed Base"
+        
         base_unit = Unit(
             property_id=prop.id,
             type=base_unit_type,
             price=request.form['price'],
-            size=request.form['sqm'],
-            beds=request.form['beds'],
-            baths=request.form['baths']
+            size=safe_int(request.form.get('sqm')),
+            beds=base_beds,
+            baths=safe_int(request.form.get('baths'))
         )
         db.session.add(base_unit)
 
@@ -223,9 +254,9 @@ def update_property(id):
                     property_id=prop.id,
                     type=unit_types[i],
                     price=unit_prices[i],
-                    size=unit_sizes[i],
-                    beds=unit_beds[i],
-                    baths=unit_baths[i] if i < len(unit_baths) else 0
+                    size=safe_int(unit_sizes[i]),
+                    beds=safe_int(unit_beds[i]),
+                    baths=safe_int(unit_baths[i]) if i < len(unit_baths) else 0
                 )
                 db.session.add(new_unit)
 
@@ -238,6 +269,10 @@ def update_property(id):
 @app.route('/api/properties', methods=['POST'])
 def add_property():
     try:
+        beds_val = safe_int(request.form.get('beds'))
+        baths_val = safe_int(request.form.get('baths'))
+        sqm_val = safe_int(request.form.get('sqm'))
+
         new_property = Property(
             title=request.form['title'],
             price=request.form['price'],
@@ -248,12 +283,13 @@ def add_property():
             rental_yield=request.form.get('rental_yield', 'N/A'),
             annual_growth=request.form.get('annual_growth', 'N/A'),
             market_comparison=request.form.get('market_comparison', 'Average'),
+            analytics_text=request.form.get('analytics_text', ''),
             nearby_schools=request.form.get('nearby_schools', ''),
             nearby_hospitals=request.form.get('nearby_hospitals', ''),
             nearby_shopping=request.form.get('nearby_shopping', ''),
-            beds=request.form['beds'],
-            baths=request.form['baths'],
-            sqm=request.form['sqm'],
+            beds=beds_val,
+            baths=baths_val,
+            sqm=sqm_val,
             description=request.form['description'],
             amenities=request.form['amenities'],
             is_featured=request.form.get('is_featured') == 'true',
@@ -262,14 +298,14 @@ def add_property():
         db.session.add(new_property)
         db.session.commit() 
 
-        base_unit_type = "Studio" if int(request.form['beds']) == 0 else f"{request.form['beds']} Bed Base"
+        base_unit_type = "Studio" if beds_val == 0 else f"{beds_val} Bed Base"
         base_unit = Unit(
             property_id=new_property.id,
             type=base_unit_type,
             price=request.form['price'],
-            size=request.form['sqm'],
-            beds=request.form['beds'],
-            baths=request.form['baths']
+            size=sqm_val,
+            beds=beds_val,
+            baths=baths_val
         )
         db.session.add(base_unit)
 
@@ -295,9 +331,9 @@ def add_property():
                     property_id=new_property.id,
                     type=unit_types[i],
                     price=unit_prices[i],
-                    size=unit_sizes[i],
-                    beds=unit_beds[i],
-                    baths=unit_baths[i] if i < len(unit_baths) else 0
+                    size=safe_int(unit_sizes[i]),
+                    beds=safe_int(unit_beds[i]),
+                    baths=safe_int(unit_baths[i]) if i < len(unit_baths) else 0
                 )
                 db.session.add(new_unit)
 
@@ -320,15 +356,12 @@ def update_unit_status(id):
 def update_property_status(id):
     property = Property.query.get_or_404(id)
     data = request.get_json()
-    
     if 'status' in data:
         new_status = data['status']
         property.status = new_status
-        
         if new_status in ['Sold', 'Rented', 'Off Market']:
             for unit in property.units:
                 unit.status = 'Sold'
-                
     db.session.commit()
     return jsonify({"message": "Property and Unit statuses updated"})
 
@@ -365,7 +398,7 @@ def delete_inquiry(id):
     db.session.commit()
     return jsonify({"message": "Deleted"}), 200
 
-@app.route('/api/inquiries/<int:id>', methods=['PUT'])
+@app.route('/api/inquiries/<int:id>', methods=['PUT', 'PATCH'])
 def update_inquiry_status(id):
     inquiry = Inquiry.query.get_or_404(id)
     data = request.get_json()
@@ -373,6 +406,10 @@ def update_inquiry_status(id):
         inquiry.status = data['status']
     db.session.commit()
     return jsonify({"message": "Status updated"})
+
+@app.route('/api/testimonials', methods=['GET'])
+def get_testimonials():
+    return jsonify([]) 
 
 if __name__ == '__main__':
     init_db()
