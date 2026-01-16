@@ -55,12 +55,15 @@ const Dashboard = () => {
     "Parking",
   ];
 
+  const [subscribers, setSubscribers] = useState([]);
+
   useEffect(() => {
     const isAdmin = localStorage.getItem("isAdmin");
     if (!isAdmin) navigate("/login");
     fetchProperties();
     fetchInquiries();
     fetchTestimonials();
+    fetchSubscribers();
   }, [navigate]);
 
   const fetchProperties = async () => {
@@ -85,6 +88,15 @@ const Dashboard = () => {
     try {
       const res = await axios.get("http://127.0.0.1:5000/api/testimonials");
       setTestimonials(res.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const fetchSubscribers = async () => {
+    try {
+      const res = await axios.get("http://127.0.0.1:5000/api/subscribers");
+      setSubscribers(res.data);
     } catch (err) {
       console.error(err);
     }
@@ -143,7 +155,16 @@ const Dashboard = () => {
     }
   };
 
-  // --- COLOR LOGIC ADDED HERE ---
+  const handleDeleteSubscriber = async (id) => {
+    if (window.confirm("Remove this subscriber?")) {
+      try {
+        await axios.delete(`http://127.0.0.1:5000/api/subscribers/${id}`);
+        fetchSubscribers();
+      } catch (err) {
+        alert("Failed to delete");
+      }
+    }
+  };
   const getStatusColor = (status) => {
     switch (status) {
       case "New":
@@ -353,24 +374,26 @@ const Dashboard = () => {
 
       <div className="container mx-auto px-6 mt-8 mb-8">
         <div className="flex gap-4 border-b border-gray-300 pb-4 overflow-x-auto">
-          {["overview", "properties", "inbox", "settings"].map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-6 py-2 rounded-full font-bold text-sm transition-all whitespace-nowrap capitalize ${
-                activeTab === tab
-                  ? "bg-brand-navy text-white shadow-lg"
-                  : "bg-white text-gray-500 hover:bg-gray-200"
-              }`}
-            >
-              {tab}{" "}
-              {tab === "inbox" && inquiries.length > 0 && (
-                <span className="ml-2 bg-brand-gold text-brand-navy px-2 py-0.5 rounded-full text-xs">
-                  {inquiries.length}
-                </span>
-              )}
-            </button>
-          ))}
+          {["overview", "properties", "inbox", "subscribers", "settings"].map(
+            (tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`px-6 py-2 rounded-full font-bold text-sm transition-all whitespace-nowrap capitalize ${
+                  activeTab === tab
+                    ? "bg-brand-navy text-white shadow-lg"
+                    : "bg-white text-gray-500 hover:bg-gray-200"
+                }`}
+              >
+                {tab}{" "}
+                {tab === "inbox" && inquiries.length > 0 && (
+                  <span className="ml-2 bg-brand-gold text-brand-navy px-2 py-0.5 rounded-full text-xs">
+                    {inquiries.length}
+                  </span>
+                )}
+              </button>
+            )
+          )}
         </div>
       </div>
 
@@ -1058,6 +1081,60 @@ const Dashboard = () => {
                 Save Changes
               </button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {activeTab === "subscribers" && (
+        <div className="container mx-auto px-6 max-w-4xl">
+          <div className="bg-white rounded-xl shadow-lg p-8 min-h-[400px]">
+            <h2 className="text-2xl font-bold text-brand-navy mb-8">
+              Newsletter Subscribers
+            </h2>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm text-left text-gray-500">
+                <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3">Email Address</th>
+                    <th className="px-6 py-3">Date Subscribed</th>
+                    <th className="px-6 py-3 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {subscribers.map((sub) => (
+                    <tr
+                      key={sub.id}
+                      className="bg-white border-b hover:bg-gray-50"
+                    >
+                      <td className="px-6 py-4 font-medium text-gray-900">
+                        {sub.email}
+                      </td>
+                      <td className="px-6 py-4">
+                        {new Date(sub.created_at).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <button
+                          onClick={() => handleDeleteSubscriber(sub.id)}
+                          className="font-medium text-red-600 hover:underline"
+                        >
+                          Remove
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                  {subscribers.length === 0 && (
+                    <tr>
+                      <td
+                        colSpan="3"
+                        className="px-6 py-8 text-center text-gray-400"
+                      >
+                        No subscribers yet.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}

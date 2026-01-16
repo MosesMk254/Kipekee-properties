@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { blogPosts } from "../../data/blogData"; 
+import axios from "axios";
+import { blogPosts } from "../../data/blogData";
 
 const Blog = () => {
   useEffect(() => {
@@ -9,6 +10,28 @@ const Blog = () => {
   }, []);
 
   const [activeCategory, setActiveCategory] = useState("All");
+
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState("idle");
+
+  const handleSubscribe = async (e) => {
+    e.preventDefault();
+    if (!email) return;
+    setStatus("loading");
+
+    try {
+      await axios.post("http://127.0.0.1:5000/api/subscribe", { email });
+      setStatus("success");
+      setEmail("");
+    } catch (err) {
+      if (err.response && err.response.data.message === "Already subscribed") {
+        alert("You are already subscribed!");
+        setStatus("idle");
+      } else {
+        setStatus("error");
+      }
+    }
+  };
 
   const categories = [
     "All",
@@ -149,14 +172,34 @@ const Blog = () => {
                   Get the latest market insights delivered to your inbox.
                 </p>
 
-                <input
-                  type="email"
-                  placeholder="Email Address"
-                  className="w-full bg-white/10 border border-white/20 rounded p-3 text-sm mb-4 focus:outline-none focus:border-brand-gold text-white placeholder-gray-400 relative z-10"
-                />
-                <button className="w-full bg-brand-gold text-white font-bold py-3 rounded uppercase text-xs tracking-widest hover:bg-white hover:text-brand-navy transition-colors relative z-10">
-                  Sign Up
-                </button>
+                {status === "success" ? (
+                  <div className="bg-green-500/20 border border-green-500/50 text-green-300 p-4 rounded text-sm relative z-10">
+                    <span className="font-bold block mb-1">Success!</span>
+                    You've been added to our list.
+                  </div>
+                ) : (
+                  <form onSubmit={handleSubscribe}>
+                    <input
+                      type="email"
+                      placeholder="Email Address"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="w-full bg-white/10 border border-white/20 rounded p-3 text-sm mb-4 focus:outline-none focus:border-brand-gold text-white placeholder-gray-400 relative z-10"
+                      required
+                    />
+                    <button
+                      disabled={status === "loading"}
+                      className="w-full bg-brand-gold text-white font-bold py-3 rounded uppercase text-xs tracking-widest hover:bg-white hover:text-brand-navy transition-colors relative z-10 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {status === "loading" ? "Signing Up..." : "Sign Up"}
+                    </button>
+                    {status === "error" && (
+                      <p className="text-red-400 text-xs mt-2 relative z-10">
+                        Unable to subscribe. Please try again.
+                      </p>
+                    )}
+                  </form>
+                )}
               </div>
             </div>
           </div>

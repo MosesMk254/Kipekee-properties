@@ -142,6 +142,18 @@ class User(db.Model):
     def check_password(self, password):
         return bcrypt.check_password_hash(self.password_hash, password)
 
+class Subscriber(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'email': self.email,
+            'created_at': self.created_at.isoformat() + 'Z'
+        }
+
 def init_db():
     with app.app_context():
         db.create_all()
@@ -410,6 +422,35 @@ def update_inquiry_status(id):
 @app.route('/api/testimonials', methods=['GET'])
 def get_testimonials():
     return jsonify([]) 
+
+@app.route('/api/subscribe', methods=['POST'])
+def subscribe():
+    data = request.get_json()
+    email = data.get('email')
+    
+    if not email:
+        return jsonify({"message": "Email required"}), 400
+        
+    existing = Subscriber.query.filter_by(email=email).first()
+    if existing:
+        return jsonify({"message": "Already subscribed"}), 400
+        
+    new_sub = Subscriber(email=email)
+    db.session.add(new_sub)
+    db.session.commit()
+    return jsonify({"message": "Subscribed successfully"}), 201
+
+@app.route('/api/subscribers', methods=['GET'])
+def get_subscribers():
+    subs = Subscriber.query.order_by(Subscriber.id.desc()).all()
+    return jsonify([s.to_dict() for s in subs])
+
+@app.route('/api/subscribers/<int:id>', methods=['DELETE'])
+def delete_subscriber(id):
+    sub = Subscriber.query.get_or_404(id)
+    db.session.delete(sub)
+    db.session.commit()
+    return jsonify({"message": "Deleted"}), 200
 
 if __name__ == '__main__':
     init_db()
