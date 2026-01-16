@@ -162,9 +162,10 @@ const Contact = () => {
             />
             <div className="absolute inset-0 bg-brand-navy/40"></div>
             <div className="absolute bottom-12 left-12 text-white p-6 max-w-md">
-              <h3 className="text-3xl font-heading font-bold mb-4">
+              <h3 className="text-3xl font-heading font-bold mb-4 text-gray-200">
                 Start Your Journey.
               </h3>
+
               <p className="opacity-90">
                 Whether you are looking to buy, sell, or invest, our team is
                 ready to provide expert guidance tailored to your needs.

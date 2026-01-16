@@ -105,18 +105,80 @@ const About = () => {
             <h3 className="text-3xl font-heading font-bold text-brand-navy mb-6">
               A Legacy of Excellence
             </h3>
-            <p className="text-gray-500 leading-relaxed mb-6">
-              Founded in 2014, Kipekee Properties began with a singular vision:
-              to elevate the real estate experience in Nairobi. We recognized
-              that luxury isn't just about price tags; it's about the
-              experience, the details, and the feeling of arriving home.
+            <p>
+              <strong>Kipekee Properties</strong> is a purpose-driven real
+              estate agency dedicated to creating precise, value-aligned matches
+              between properties and homeowners or investors. Guided by insight,
+              integrity, and market intelligence, Kipekee Properties goes beyond
+              traditional brokerage by delivering tailored property solutions
+              that reflect the unique goals of each client.
             </p>
-            <p className="text-gray-500 leading-relaxed">
-              Today, we are proud to be the preferred agency for Nairobi's most
-              discerning buyers and investors. From the leafy suburbs of Karen
-              to the skyline of Westlands, our footprint is defined by quality,
-              integrity, and unmatched market intelligence.
+
+            <p>
+              The name <strong>Kipekee</strong>, meaning <em>“exceptional”</em>,
+              defines the firm’s philosophy: every property has its own value
+              story, and every client deserves a solution designed specifically
+              for them.
             </p>
+
+            <br />
+
+            <p>
+              <strong>Mission</strong>
+            </p>
+            <p>
+              To connect people and capital to the right properties through
+              strategic matching, professional guidance, and uncompromising
+              service excellence.
+            </p>
+
+            <br />
+
+            <p>
+              <strong>Vision</strong>
+            </p>
+            <p>
+              To become a trusted real estate partner recognized for precision
+              matchmaking, ethical practice, and long-term value creation in
+              property ownership and investment.
+            </p>
+
+            <br />
+
+            <p>
+              <strong>Value Proposition</strong>
+            </p>
+            <p>
+              Kipekee Properties differentiates itself through a consultative,
+              match-driven approach. Rather than simply listing or selling
+              property, the firm focuses on understanding client intent—whether
+              lifestyle, yield, growth, or legacy—and aligning it with the right
+              asset at the right time.
+            </p>
+
+            <br />
+
+            <p>
+              <strong>Operating Principles</strong>
+            </p>
+            <ul>
+              <li>
+                <strong>Precision:</strong> Every recommendation is grounded in
+                research and relevance.
+              </li>
+              <li>
+                <strong>Integrity:</strong> Transparent dealings and ethical
+                standards guide all transactions.
+              </li>
+              <li>
+                <strong>Client-Centricity:</strong> Solutions are customized,
+                not standardized.
+              </li>
+              <li>
+                <strong>Market Intelligence:</strong> Decisions are informed by
+                current data and long-term trends.
+              </li>
+            </ul>
           </motion.div>
 
           <motion.div

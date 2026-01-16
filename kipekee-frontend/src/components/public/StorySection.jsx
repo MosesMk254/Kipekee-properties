@@ -20,17 +20,13 @@ const StorySection = () => {
               Redefining Luxury Living in Kenya
             </h2>
             <p className="text-gray-500 leading-relaxed mb-6">
-              At Kipekee, we believe that a home is more than just a place to
-              live—it is a sanctuary. Established in 2020, we have curated the
-              most exclusive portfolio of properties in Nairobi, focusing on
-              architectural excellence and prime locations.
+              Kipekee Properties is a purpose-driven real estate agency that
+              specializes in precisely matching clients with properties aligned
+              to their goals. Guided by integrity, market intelligence, and a
+              consultative approach, the firm delivers tailored property
+              solutions that create long-term value for homeowners and investors
+              alike.
             </p>
-            <p className="text-gray-500 leading-relaxed mb-8">
-              Whether you are looking for a colonial-style mansion in Karen or a
-              modern penthouse in Westlands, our team ensures a seamless,
-              personalized buying experience.
-            </p>
-
             <Link to="/about">
               <button className="border-2 border-brand-navy text-brand-navy px-8 py-3 font-bold uppercase text-xs tracking-widest hover:bg-brand-navy hover:text-white transition-all duration-300 rounded-sm">
                 Read More About Us

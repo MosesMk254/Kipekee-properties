@@ -25,22 +25,22 @@ const LocationGrid = () => {
     {
       name: "Karen",
       image:
-        "https://images.unsplash.com/photo-1505691938895-1758d7feb511?q=80&w=600&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1658218729615-167c32d70537?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8N3x8a2VueWElMjBob3VzZXN8ZW58MHx8MHx8fDA%3D",
     },
     {
       name: "Westlands",
       image:
-        "https://images.unsplash.com/photo-1486325212027-8081e485255e?q=80&w=600&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1669333490889-194e8f46a766?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     },
     {
       name: "Runda",
       image:
-        "https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?q=80&w=600&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1676794944553-399cade9cd39?q=80&w=1332&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     },
     {
       name: "Kilimani",
       image:
-        "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?q=80&w=600&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1710168867585-9a74109dae6a?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MjJ8fG5haXJvYml8ZW58MHx8MHx8fDA%3D",
     },
   ];
 

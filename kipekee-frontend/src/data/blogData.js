@@ -6,7 +6,7 @@ export const blogPosts = [
     date: "Oct 12, 2025",
     author: "Sarah Jenkins",
     image:
-      "https://images.unsplash.com/photo-1577086664693-894553052523?q=80&w=800&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=800&auto=format&fit=crop",
     excerpt:
       "Discover the hidden gems where property value is projected to skyrocket in the coming years.",
     content: `
@@ -33,7 +33,7 @@ export const blogPosts = [
     date: "Sep 28, 2025",
     author: "David Kimani",
     image:
-      "https://images.unsplash.com/photo-1616486338812-3dadae4b4f9d?q=80&w=800&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1505691938895-1758d7feb511?q=80&w=800&auto=format&fit=crop",
     excerpt:
       "First impressions matter. Learn how professional staging can add up to 15% to your final sale price.",
     content: `

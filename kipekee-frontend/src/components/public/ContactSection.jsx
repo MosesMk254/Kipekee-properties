@@ -55,9 +55,10 @@ const ContactSection = () => {
             <div className="absolute inset-0 bg-brand-navy/30"></div>
 
             <div className="absolute bottom-12 left-12 text-white max-w-xs hidden md:block">
-              <h3 className="text-3xl font-heading font-bold mb-4">
+              <h3 className="text-3xl font-heading font-bold mb-4 text-gray-300">
                 Let's Find Your Dream Home.
               </h3>
+
               <p className="opacity-90 font-light">
                 Our team of luxury specialists is ready to assist you every step
                 of the way.
