@@ -23,6 +23,11 @@ const PropertyDetails = () => {
   });
   const [formStatus, setFormStatus] = useState("");
 
+  const fixImage = (url) => {
+    if (!url) return "";
+    return url.replace("http://127.0.0.1:5000", "https://api.rutererealty.com");
+  };
+
   useEffect(() => {
     window.scrollTo(0, 0);
     const fetchDetails = async () => {

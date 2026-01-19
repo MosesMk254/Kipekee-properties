@@ -4,6 +4,11 @@ import { useState, useEffect } from "react";
 const PropertyCard = ({ property }) => {
   const [isLiked, setIsLiked] = useState(false);
 
+  const fixImage = (url) => {
+    if (!url) return "";
+    return url.replace("http://127.0.0.1:5000", "https://api.rutererealty.com");
+  };
+
   const isOffMarket = ["Sold", "Rented", "Off Market"].includes(
     property.status
   );
