@@ -34,8 +34,8 @@ const Footer = () => {
           <div>
             <div className="text-3xl font-heading font-bold text-white mb-6">
               <img
-                src="/logo.png"
-                alt="Kipekee Properties"
+                src="/logos.png"
+                alt="Rutere Realty"
                 className="h-16 w-auto object-contain transform scale-150 origin-left"
               />
             </div>
@@ -116,7 +116,7 @@ const Footer = () => {
               </li>
               <li className="flex items-center">
                 <span className="text-brand-gold mr-3 font-bold">E.</span>
-                info@kipekee.com
+                info@rutererealty.com
               </li>
             </ul>
           </div>
@@ -164,8 +164,7 @@ const Footer = () => {
 
         <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-gray-500">
           <p>
-            © {new Date().getFullYear()} Kipekee Properties. All rights
-            reserved.
+            © {new Date().getFullYear()} Rutere Realty. All rights reserved.
           </p>
           <div className="flex space-x-6 mt-4 md:mt-0">
             <a href="#" className="hover:text-white transition-colors">

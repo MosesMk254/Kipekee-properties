@@ -106,19 +106,12 @@ const About = () => {
               A Legacy of Excellence
             </h3>
             <p>
-              <strong>Kipekee Properties</strong> is a purpose-driven real
-              estate agency dedicated to creating precise, value-aligned matches
+              <strong>Rutere Realty</strong> is a purpose-driven real estate
+              agency dedicated to creating precise, value-aligned matches
               between properties and homeowners or investors. Guided by insight,
-              integrity, and market intelligence, Kipekee Properties goes beyond
+              integrity, and market intelligence, Rutere Realty goes beyond
               traditional brokerage by delivering tailored property solutions
               that reflect the unique goals of each client.
-            </p>
-
-            <p>
-              The name <strong>Kipekee</strong>, meaning <em>“exceptional”</em>,
-              defines the firm’s philosophy: every property has its own value
-              story, and every client deserves a solution designed specifically
-              for them.
             </p>
 
             <br />
@@ -149,7 +142,7 @@ const About = () => {
               <strong>Value Proposition</strong>
             </p>
             <p>
-              Kipekee Properties differentiates itself through a consultative,
+              Rutere Realty differentiates itself through a consultative,
               match-driven approach. Rather than simply listing or selling
               property, the firm focuses on understanding client intent—whether
               lifestyle, yield, growth, or legacy—and aligning it with the right
@@ -204,7 +197,7 @@ const About = () => {
 
       <div className="bg-gray-50 py-24">
         <div className="container mx-auto px-6">
-          {/* <div className="bg-white rounded-3xl shadow-xl overflow-hidden flex flex-col md:flex-row">
+          <div className="bg-white rounded-3xl shadow-xl overflow-hidden flex flex-col md:flex-row">
             <motion.div
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
@@ -229,72 +222,72 @@ const About = () => {
                   Meet The Founder
                 </h5>
                 <h2 className="text-3xl md:text-4xl font-heading font-bold text-brand-navy mb-6">
-                  Sarah Jenkins
+                  Christine Rutere
                 </h2>
 
                 <p className="text-gray-500 italic mb-6 text-lg">
-                  "I started Kipekee with a simple belief: that finding a home
-                  should be as inspiring as living in one."
+                  "I started Rutere Realty with a simple belief: that finding a
+                  home should be as inspiring as living in one."
                 </p>
 
                 <p className="text-gray-500 leading-relaxed mb-6 text-sm">
-                  With over 15 years in the luxury real estate market, Sarah has
-                  personally facilitated over $50M in property transactions. Her
-                  deep understanding of Nairobi's architectural heritage,
-                  combined with an eye for modern design, allows her to match
-                  clients with homes that truly reflect their aspirations.
+                  With over 10 years in the luxury real estate market, Christine
+                  has personally facilitated over Ksh.200M in property
+                  transactions. Her deep understanding of Nairobi's
+                  architectural heritage, combined with an eye for modern
+                  design, allows her to match clients with homes that truly
+                  reflect their aspirations.
                 </p>
                 <p className="text-gray-500 leading-relaxed mb-8 text-sm">
-                  When she isn't scouting the next hidden gem in Muthaiga, Sarah
-                  serves on the board of the Kenya Green Building Society,
-                  advocating for sustainable luxury living.
+                  When she isn't scouting the next hidden gem in Muthaiga,
+                  Christine serves on the board of the Kenya Green Building
+                  Society, advocating for sustainable luxury living.
                 </p>
 
                 <div className="font-handwriting text-2xl text-brand-navy opacity-70">
-                  Sarah Jenkins
+                  Christine Rutere
                 </div>
               </motion.div>
             </div>
-          </div> */}
-          <div className="bg-white py-20">
-            <div className="container mx-auto px-6 text-center">
-              <h2 className="text-3xl font-heading font-bold text-brand-navy mb-12">
-                Our Core Values
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div className="p-6 border border-gray-100 rounded-xl shadow-sm">
-                  <div className="w-12 h-12 bg-brand-gold/10 rounded-full flex items-center justify-center mx-auto mb-4 text-brand-gold font-bold text-xl">
-                    1
-                  </div>
-                  <h3 className="font-bold text-brand-navy mb-2">
-                    Transparency
-                  </h3>
-                  <p className="text-gray-500 text-sm">
-                    We believe in clear, honest communication. No hidden fees,
-                    no surprises—just straight talk.
-                  </p>
-                </div>
-                <div className="p-6 border border-gray-100 rounded-xl shadow-sm">
-                  <div className="w-12 h-12 bg-brand-gold/10 rounded-full flex items-center justify-center mx-auto mb-4 text-brand-gold font-bold text-xl">
-                    2
-                  </div>
-                  <h3 className="font-bold text-brand-navy mb-2">Insight</h3>
-                  <p className="text-gray-500 text-sm">
-                    We provide data-driven market analysis to turn your property
-                    purchase into a smart investment.
-                  </p>
-                </div>
-                <div className="p-6 border border-gray-100 rounded-xl shadow-sm">
-                  <div className="w-12 h-12 bg-brand-gold/10 rounded-full flex items-center justify-center mx-auto mb-4 text-brand-gold font-bold text-xl">
-                    3
-                  </div>
-                  <h3 className="font-bold text-brand-navy mb-2">Excellence</h3>
-                  <p className="text-gray-500 text-sm">
-                    From viewing to closing, we ensure a seamless, premium
-                    experience for every client.
-                  </p>
-                </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white py-24">
+        <div className="container mx-auto px-6 text-center">
+          <h2 className="text-3xl font-heading font-bold text-brand-navy mb-12">
+            Our Core Values
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="p-6 border border-gray-100 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+              <div className="w-12 h-12 bg-brand-gold/10 rounded-full flex items-center justify-center mx-auto mb-4 text-brand-gold font-bold text-xl">
+                1
               </div>
+              <h3 className="font-bold text-brand-navy mb-2">Transparency</h3>
+              <p className="text-gray-500 text-sm">
+                We believe in clear, honest communication. No hidden fees, no
+                surprises—just straight talk.
+              </p>
+            </div>
+            <div className="p-6 border border-gray-100 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+              <div className="w-12 h-12 bg-brand-gold/10 rounded-full flex items-center justify-center mx-auto mb-4 text-brand-gold font-bold text-xl">
+                2
+              </div>
+              <h3 className="font-bold text-brand-navy mb-2">Insight</h3>
+              <p className="text-gray-500 text-sm">
+                We provide data-driven market analysis to turn your property
+                purchase into a smart investment.
+              </p>
+            </div>
+            <div className="p-6 border border-gray-100 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+              <div className="w-12 h-12 bg-brand-gold/10 rounded-full flex items-center justify-center mx-auto mb-4 text-brand-gold font-bold text-xl">
+                3
+              </div>
+              <h3 className="font-bold text-brand-navy mb-2">Excellence</h3>
+              <p className="text-gray-500 text-sm">
+                From viewing to closing, we ensure a seamless, premium
+                experience for every client.
+              </p>
             </div>
           </div>
         </div>

@@ -20,7 +20,7 @@ const StorySection = () => {
               Redefining Luxury Living in Kenya
             </h2>
             <p className="text-gray-500 leading-relaxed mb-6">
-              Kipekee Properties is a purpose-driven real estate agency that
+              Rutere Realty is a purpose-driven real estate agency that
               specializes in precisely matching clients with properties aligned
               to their goals. Guided by integrity, market intelligence, and a
               consultative approach, the firm delivers tailored property

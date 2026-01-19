@@ -2,8 +2,7 @@ import React from "react";
 
 const WhatsAppFloat = () => {
   const phoneNumber = "254791869625";
-  const message =
-    "Hello, I am interested in an inquiry about Kipekee Properties.";
+  const message = "Hello, I am interested in an inquiry about Rutere Realty.";
   const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(
     message
   )}`;

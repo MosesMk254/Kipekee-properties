@@ -113,7 +113,7 @@ const Contact = () => {
         </svg>
       ),
       title: "Send an Email",
-      text: "info@kipekee.com",
+      text: "info@rutererealty.com",
       subtext: "We reply within 2 hours",
     },
   ];

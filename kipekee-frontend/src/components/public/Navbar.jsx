@@ -42,8 +42,8 @@ const Navbar = () => {
           <div className="text-2xl font-heading font-bold text-white tracking-wide z-50 relative">
             <Link to="/" className="block">
               <img
-                src="/logo.png"
-                alt="Kipekee Properties"
+                src="/logos.png"
+                alt="Rutere Realty"
                 className="h-10 md:h-12 w-auto object-contain transform scale-[1.8] origin-left ml-2"
               />
             </Link>
