@@ -8,9 +8,11 @@ from datetime import datetime
 import uuid
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "*"}})
+CORS(app, resources={r"/*": {"origins": ["https://rutererealty.com", "https://www.rutererealty.com", "http://localhost:5173"]}})
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///kipekee.db'
+basedir = os.path.abspath(os.path.dirname(__file__))
+
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'instance', 'kipekee.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 UPLOAD_FOLDER = os.path.join(app.root_path, 'static/uploads')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER

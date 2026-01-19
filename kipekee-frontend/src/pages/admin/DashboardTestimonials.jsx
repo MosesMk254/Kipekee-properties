@@ -14,7 +14,7 @@ const DashboardTestimonials = ({ testimonials, fetchTestimonials }) => {
     if (image) data.append("image", image);
 
     try {
-      await axios.post("http://127.0.0.1:5000/api/testimonials", data);
+      await axios.post("https://api.rutererealty.com/api/testimonials", data);
       alert("Review Added!");
       setForm({ name: "", role: "", content: "" });
       setImage(null);
@@ -26,7 +26,7 @@ const DashboardTestimonials = ({ testimonials, fetchTestimonials }) => {
 
   const handleDelete = async (id) => {
     if (window.confirm("Delete this review?")) {
-      await axios.delete(`http://127.0.0.1:5000/api/testimonials/${id}`);
+      await axios.delete(`https://api.rutererealty.com/api/testimonials/${id}`);
       fetchTestimonials();
     }
   };

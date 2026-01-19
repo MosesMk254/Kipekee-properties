@@ -68,7 +68,9 @@ const Dashboard = () => {
 
   const fetchProperties = async () => {
     try {
-      const res = await axios.get("http://127.0.0.1:5000/api/properties");
+      const res = await axios.get(
+        "https://api.rutererealty.com/api/properties"
+      );
       setProperties(res.data);
     } catch (err) {
       console.error(err);
@@ -77,7 +79,7 @@ const Dashboard = () => {
 
   const fetchInquiries = async () => {
     try {
-      const res = await axios.get("http://127.0.0.1:5000/api/inquiries");
+      const res = await axios.get("https://api.rutererealty.com/api/inquiries");
       setInquiries(res.data);
     } catch (err) {
       console.error(err);
@@ -86,7 +88,9 @@ const Dashboard = () => {
 
   const fetchTestimonials = async () => {
     try {
-      const res = await axios.get("http://127.0.0.1:5000/api/testimonials");
+      const res = await axios.get(
+        "https://api.rutererealty.com/api/testimonials"
+      );
       setTestimonials(res.data);
     } catch (err) {
       console.error(err);
@@ -95,7 +99,9 @@ const Dashboard = () => {
 
   const fetchSubscribers = async () => {
     try {
-      const res = await axios.get("http://127.0.0.1:5000/api/subscribers");
+      const res = await axios.get(
+        "https://api.rutererealty.com/api/subscribers"
+      );
       setSubscribers(res.data);
     } catch (err) {
       console.error(err);
@@ -108,7 +114,7 @@ const Dashboard = () => {
         msg.id === id ? { ...msg, status: newStatus } : msg
       );
       setInquiries(updatedInquiries);
-      await axios.put(`http://127.0.0.1:5000/api/inquiries/${id}`, {
+      await axios.put(`https://api.rutererealty.com/api/inquiries/${id}`, {
         status: newStatus,
       });
     } catch (err) {
@@ -120,7 +126,10 @@ const Dashboard = () => {
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
     try {
-      await axios.put("http://127.0.0.1:5000/api/admin/update", profileData);
+      await axios.put(
+        "https://api.rutererealty.com/api/admin/update",
+        profileData
+      );
       alert("Profile Updated Successfully. Please login again.");
       localStorage.removeItem("isAdmin");
       navigate("/login");
@@ -135,9 +144,12 @@ const Dashboard = () => {
     );
     setProperties(updatedProperties);
     try {
-      await axios.patch(`http://127.0.0.1:5000/api/properties/${id}/status`, {
-        status: newStatus,
-      });
+      await axios.patch(
+        `https://api.rutererealty.com/api/properties/${id}/status`,
+        {
+          status: newStatus,
+        }
+      );
     } catch (err) {
       alert("Error updating status");
       fetchProperties();
@@ -146,9 +158,12 @@ const Dashboard = () => {
 
   const handleUnitStatusChange = async (unitId, newStatus) => {
     try {
-      await axios.patch(`http://127.0.0.1:5000/api/units/${unitId}/status`, {
-        status: newStatus,
-      });
+      await axios.patch(
+        `https://api.rutererealty.com/api/units/${unitId}/status`,
+        {
+          status: newStatus,
+        }
+      );
       fetchProperties();
     } catch (err) {
       alert("Error updating unit status");
@@ -158,7 +173,9 @@ const Dashboard = () => {
   const handleDeleteSubscriber = async (id) => {
     if (window.confirm("Remove this subscriber?")) {
       try {
-        await axios.delete(`http://127.0.0.1:5000/api/subscribers/${id}`);
+        await axios.delete(
+          `https://api.rutererealty.com/api/subscribers/${id}`
+        );
         fetchSubscribers();
       } catch (err) {
         alert("Failed to delete");
@@ -320,7 +337,7 @@ const Dashboard = () => {
     try {
       if (isEditing) {
         await axios.put(
-          `http://127.0.0.1:5000/api/properties/${editId}`,
+          `https://api.rutererealty.com/api/properties/${editId}`,
           data,
           {
             headers: { "Content-Type": "multipart/form-data" },
@@ -328,7 +345,7 @@ const Dashboard = () => {
         );
         alert("Property Updated Successfully!");
       } else {
-        await axios.post("http://127.0.0.1:5000/api/properties", data, {
+        await axios.post("https://api.rutererealty.com/api/properties", data, {
           headers: { "Content-Type": "multipart/form-data" },
         });
         alert("Property Listed Successfully!");
@@ -342,14 +359,14 @@ const Dashboard = () => {
 
   const handleDeleteProperty = async (id) => {
     if (window.confirm("Delete this property?")) {
-      await axios.delete(`http://127.0.0.1:5000/api/properties/${id}`);
+      await axios.delete(`https://api.rutererealty.com/api/properties/${id}`);
       fetchProperties();
     }
   };
 
   const handleDeleteInquiry = async (id) => {
     if (window.confirm("Delete this message?")) {
-      await axios.delete(`http://127.0.0.1:5000/api/inquiries/${id}`);
+      await axios.delete(`https://api.rutererealty.com/api/inquiries/${id}`);
       fetchInquiries();
     }
   };

@@ -18,7 +18,9 @@ const Hero = () => {
   useEffect(() => {
     const fetchLocations = async () => {
       try {
-        const res = await axios.get("http://127.0.0.1:5000/api/properties");
+        const res = await axios.get(
+          "https://api.rutererealty.com/api/properties"
+        );
         const locs = [
           ...new Set(res.data.map((p) => p.location.split(",")[0].trim())),
         ];

@@ -1,0 +1,14 @@
+---
+deployment:
+  tasks:
+    # 1. Copy Backend Files to api_backend
+    - export DEPLOYPATH=/home/zahhnpez/api_backend/
+    - /bin/cp -R * $DEPLOYPATH
+    - /bin/cp -R instance $DEPLOYPATH
+
+    # 2. Copy Frontend (React) build to public_html
+    - export FRONTENDPATH=/home/zahhnpez/public_html/
+    # First, clear the old frontend files (optional, but cleaner)
+    # - /bin/rm -rf $FRONTENDPATH/assets
+    # Copy the new build files
+    - /bin/cp -R dist/* $FRONTENDPATH

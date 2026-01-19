@@ -28,7 +28,7 @@ const PropertyDetails = () => {
     const fetchDetails = async () => {
       try {
         const res = await axios.get(
-          `http://127.0.0.1:5000/api/properties/${id}`
+          `https://api.rutererealty.com/api/properties/${id}`
         );
         setProperty(res.data);
         setLoading(false);
@@ -43,7 +43,7 @@ const PropertyDetails = () => {
   const handleUnlock = async (e) => {
     e.preventDefault();
     try {
-      await axios.post("http://127.0.0.1:5000/api/inquiries", {
+      await axios.post("https://api.rutererealty.com/api/inquiries", {
         name: unlockForm.name,
         email: unlockForm.email,
         phone: unlockForm.phone,
@@ -65,7 +65,7 @@ const PropertyDetails = () => {
       : contactForm.message;
 
     try {
-      await axios.post("http://127.0.0.1:5000/api/inquiries", {
+      await axios.post("https://api.rutererealty.com/api/inquiries", {
         ...contactForm,
         message: finalMessage,
         property_id: property.id,

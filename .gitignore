@@ -7,8 +7,14 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependencies
 node_modules
-dist
+kipekee-frontend/node_modules/
+venv/
+.venv/
+env/
+
+# Build files (We keep 'dist' allowed for deployment, so DO NOT add it here)
 dist-ssr
 *.local
 
@@ -23,6 +29,8 @@ dist-ssr
 *.sln
 *.sw?
 
+# Database protection (Crucial for cPanel)
 instance/
 *.db
-*.sqlite3kipekee-frontend/node_modules/
+*.sqlite3
+__pycache__/

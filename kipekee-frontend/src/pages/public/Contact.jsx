@@ -33,7 +33,7 @@ const Contact = () => {
     };
 
     try {
-      await axios.post("http://127.0.0.1:5000/api/inquiries", payload);
+      await axios.post("https://api.rutererealty.com/api/inquiries", payload);
       setStatus("success");
       setFormData({
         firstName: "",

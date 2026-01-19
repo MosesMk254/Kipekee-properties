@@ -20,7 +20,7 @@ const Blog = () => {
     setStatus("loading");
 
     try {
-      await axios.post("http://127.0.0.1:5000/api/subscribe", { email });
+      await axios.post("https://api.rutererealty.com/api/subscribe", { email });
       setStatus("success");
       setEmail("");
     } catch (err) {

@@ -12,7 +12,7 @@ const LiveFeaturedSection = () => {
     const fetchFeatured = async () => {
       try {
         const res = await axios.get(
-          "http://127.0.0.1:5000/api/properties?featured=true"
+          "https://api.rutererealty.com/api/properties?featured=true"
         );
         setFeaturedProperties(res.data.slice(0, 3));
         setLoading(false);
