@@ -6,11 +6,22 @@ from flask_bcrypt import Bcrypt
 from werkzeug.utils import secure_filename
 from datetime import datetime
 import uuid
+from flask_mail import Mail, Message
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": ["https://rutererealty.com", "https://www.rutererealty.com", "http://localhost:5173"]}})
 
 basedir = os.path.abspath(os.path.dirname(__file__))
+
+app.config['MAIL_SERVER'] = 'mail.rutererealty.com'
+app.config['MAIL_PORT'] = 465
+app.config['MAIL_USE_SSL'] = True
+app.config['MAIL_USE_TLS'] = False
+app.config['MAIL_USERNAME'] = 'info@rutererealty.com'
+app.config['MAIL_PASSWORD'] = '2M.6rlYHO01hu(' 
+app.config['MAIL_DEFAULT_SENDER'] = 'info@rutererealty.com'
+
+mail = Mail(app)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'instance', 'kipekee.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -397,6 +408,7 @@ def delete_property(id):
 @app.route('/api/inquiries', methods=['POST'])
 def add_inquiry():
     data = request.get_json()
+    
     new_inquiry = Inquiry(
         name=data.get('name'),
         email=data.get('email'),
@@ -406,6 +418,30 @@ def add_inquiry():
     )
     db.session.add(new_inquiry)
     db.session.commit()
+
+    try:
+        subject = f"New Inquiry from {data.get('name')}"
+        body = f"""
+        You have received a new inquiry on Rutere Realty!
+
+        Name: {data.get('name')}
+        Email: {data.get('email')}
+        Phone: {data.get('phone')}
+        
+        Message:
+        {data.get('message')}
+
+        Property ID: {data.get('property_id', 'General Inquiry')}
+        """
+        
+        msg = Message(subject=subject, recipients=['info@rutererealty.com'])
+        msg.body = body
+        mail.send(msg)
+        print("Email sent successfully!")
+        
+    except Exception as e:
+        print(f"Failed to send email: {e}")
+
     return jsonify({"message": "Message Sent!"}), 201
 
 @app.route('/api/inquiries', methods=['GET'])
