@@ -13,6 +13,13 @@ CORS(app, resources={r"/*": {"origins": ["https://rutererealty.com", "https://ww
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'instance', 'kipekee.db')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+UPLOAD_FOLDER = os.path.join(app.root_path, 'static/uploads')
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+db = SQLAlchemy(app)
 app.config['MAIL_SERVER'] = 'mail.rutererealty.com'
 app.config['MAIL_PORT'] = 465
 app.config['MAIL_USE_SSL'] = True
@@ -22,14 +29,6 @@ app.config['MAIL_PASSWORD'] = '2M.6rlYHO01hu('
 app.config['MAIL_DEFAULT_SENDER'] = 'info@rutererealty.com'
 
 mail = Mail(app)
-
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'instance', 'kipekee.db')
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-UPLOAD_FOLDER = os.path.join(app.root_path, 'static/uploads')
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
-db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
 
 def safe_int(value):
@@ -437,10 +436,11 @@ def add_inquiry():
         msg = Message(subject=subject, recipients=['info@rutererealty.com'])
         msg.body = body
         mail.send(msg)
-        print("Email sent successfully!")
+        
+        return jsonify({"message": "Email sent successfully!"}), 201
         
     except Exception as e:
-        print(f"Failed to send email: {e}")
+        return jsonify({"message": "Email Failed", "error": str(e)}), 500
 
     return jsonify({"message": "Message Sent!"}), 201
 
