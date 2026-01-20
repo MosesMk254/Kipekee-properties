@@ -78,7 +78,15 @@ class Property(db.Model):
     units = db.relationship('Unit', backref='property', lazy=True, cascade="all, delete-orphan")
 
     def to_dict(self):
-        real_images_list = [img.image_url for img in self.property_images]
+        base_url = request.host_url.rstrip('/')
+        real_images_list = []
+        
+        for img in self.property_images:
+            if img.image_url.startswith('http'):
+                real_images_list.append(img.image_url)
+            else:
+                real_images_list.append(f"{base_url}/static/{img.image_url}")
+
         units_list = [u.to_dict() for u in self.units]
 
         return {
@@ -237,8 +245,8 @@ def update_property(id):
                 filename = secure_filename(file.filename)
                 unique_filename = str(uuid.uuid4())[:8] + "_" + filename
                 file.save(os.path.join(app.config['UPLOAD_FOLDER'], unique_filename))
-                full_url = request.host_url + 'static/uploads/' + unique_filename
-                new_image = PropertyImage(image_url=full_url, property_id=prop.id)
+                relative_path = 'uploads/' + unique_filename
+                new_image = PropertyImage(image_url=relative_path, property_id=prop.id)
                 db.session.add(new_image)
 
         Unit.query.filter_by(property_id=prop.id).delete()
@@ -329,8 +337,8 @@ def add_property():
                 filename = secure_filename(file.filename)
                 unique_filename = str(uuid.uuid4())[:8] + "_" + filename
                 file.save(os.path.join(app.config['UPLOAD_FOLDER'], unique_filename))
-                full_url = request.host_url + 'static/uploads/' + unique_filename
-                new_image = PropertyImage(image_url=full_url, property_id=new_property.id)
+                relative_path = 'uploads/' + unique_filename
+                new_image = PropertyImage(image_url=relative_path, property_id=new_property.id)
                 db.session.add(new_image)
         
         unit_types = request.form.getlist('unit_types')
