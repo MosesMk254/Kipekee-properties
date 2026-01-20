@@ -1,14 +1,12 @@
 ---
 deployment:
   tasks:
-    # 1. Copy Backend Files to api_backend
-    - export DEPLOYPATH=/home/zahhnpez/api_backend/
-    - /bin/cp -R * $DEPLOYPATH
-    - /bin/cp -R instance $DEPLOYPATH
-
-    # 2. Copy Frontend (React) build to public_html
+    # 1. Deploy Frontend (Visuals)
+    # Takes the 'dist' folder you build locally and puts it in the live site
     - export FRONTENDPATH=/home/zahhnpez/public_html/
-    # First, clear the old frontend files (optional, but cleaner)
-    # - /bin/rm -rf $FRONTENDPATH/assets
-    # Copy the new build files
     - /bin/cp -R dist/* $FRONTENDPATH
+
+    # 2. Deploy Backend (Logic)
+    # Copies ONLY the backend folder so we don't overwrite server configs (passenger_wsgi.py)
+    - export BACKENDPATH=/home/zahhnpez/api_backend/
+    - /bin/cp -R kipekee-backend $BACKENDPATH
