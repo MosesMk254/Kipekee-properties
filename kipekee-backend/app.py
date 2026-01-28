@@ -7,6 +7,9 @@ from werkzeug.utils import secure_filename
 from datetime import datetime
 import uuid
 from flask_mail import Mail, Message
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": ["https://rutererealty.com", "https://www.rutererealty.com", "http://localhost:5173"]}})
@@ -19,15 +22,15 @@ UPLOAD_FOLDER = os.path.join(app.root_path, 'static/uploads')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-db = SQLAlchemy(app)
 app.config['MAIL_SERVER'] = 'mail.rutererealty.com'
 app.config['MAIL_PORT'] = 465
 app.config['MAIL_USE_SSL'] = True
 app.config['MAIL_USE_TLS'] = False
 app.config['MAIL_USERNAME'] = 'info@rutererealty.com'
-app.config['MAIL_PASSWORD'] = '2M.6rlYHO01hu(' 
+app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
 app.config['MAIL_DEFAULT_SENDER'] = 'info@rutererealty.com'
 
+db = SQLAlchemy(app)
 mail = Mail(app)
 bcrypt = Bcrypt(app)
 
@@ -408,15 +411,18 @@ def delete_property(id):
 def add_inquiry():
     data = request.get_json()
     
-    new_inquiry = Inquiry(
-        name=data.get('name'),
-        email=data.get('email'),
-        phone=data.get('phone'),
-        message=data.get('message'),
-        property_id=data.get('property_id') 
-    )
-    db.session.add(new_inquiry)
-    db.session.commit()
+    try:
+        new_inquiry = Inquiry(
+            name=data.get('name'),
+            email=data.get('email'),
+            phone=data.get('phone'),
+            message=data.get('message'),
+            property_id=data.get('property_id') 
+        )
+        db.session.add(new_inquiry)
+        db.session.commit()
+    except Exception as e:
+        return jsonify({"error": "Database Error", "details": str(e)}), 500
 
     try:
         subject = f"New Inquiry from {data.get('name')}"
@@ -437,12 +443,11 @@ def add_inquiry():
         msg.body = body
         mail.send(msg)
         
-        return jsonify({"message": "Email sent successfully!"}), 201
-        
     except Exception as e:
-        return jsonify({"message": "Email Failed", "error": str(e)}), 500
+        print(f"Failed to send email: {e}")
+        return jsonify({"message": "Inquiry saved, but email notification failed.", "error": str(e)}), 201
 
-    return jsonify({"message": "Message Sent!"}), 201
+    return jsonify({"message": "Message Sent Successfully!"}), 201
 
 @app.route('/api/inquiries', methods=['GET'])
 def get_inquiries():
