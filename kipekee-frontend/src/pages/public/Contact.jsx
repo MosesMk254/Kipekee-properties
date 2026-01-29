@@ -12,7 +12,7 @@ const Contact = () => {
     lastName: "",
     email: "",
     phone: "",
-    subject: "General Inquiry",
+    subject: "General Inquiry", // Default
     message: "",
   });
   const [status, setStatus] = useState("");
@@ -25,11 +25,13 @@ const Contact = () => {
     e.preventDefault();
     setStatus("sending");
 
+    // --- KEY CHANGE: Sending 'subject' explicitly ---
     const payload = {
       name: `${formData.firstName} ${formData.lastName}`,
       email: formData.email,
       phone: formData.phone,
-      message: `Subject: ${formData.subject}\n\n${formData.message}`,
+      subject: formData.subject,
+      message: formData.message,
     };
 
     try {
@@ -165,7 +167,6 @@ const Contact = () => {
               <h3 className="text-3xl font-heading font-bold mb-4 text-gray-200">
                 Start Your Journey.
               </h3>
-
               <p className="opacity-90">
                 Whether you are looking to buy, sell, or invest, our team is
                 ready to provide expert guidance tailored to your needs.
@@ -278,10 +279,10 @@ const Contact = () => {
                     onChange={handleChange}
                     className="w-full bg-gray-50 border border-gray-200 rounded p-3 text-sm focus:border-brand-navy focus:ring-1 focus:ring-brand-navy outline-none transition-all"
                   >
-                    <option>General Inquiry</option>
-                    <option>Buying a Property</option>
-                    <option>Selling a Property</option>
-                    <option>Partnership</option>
+                    <option value="General Inquiry">General Inquiry</option>
+                    <option value="Buying">Buying a Property</option>
+                    <option value="Selling">Selling a Property</option>
+                    <option value="Partnership">Partnership</option>
                   </select>
                 </div>
 

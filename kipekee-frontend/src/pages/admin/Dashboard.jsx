@@ -10,6 +10,7 @@ const Dashboard = () => {
   const [inquiries, setInquiries] = useState([]);
   const [testimonials, setTestimonials] = useState([]);
   const [activeTab, setActiveTab] = useState("overview");
+  const [inboxFilter, setInboxFilter] = useState("All");
   const [isEditing, setIsEditing] = useState(false);
   const [editId, setEditId] = useState(null);
   const [expandedPropertyId, setExpandedPropertyId] = useState(null);
@@ -26,6 +27,7 @@ const Dashboard = () => {
     location: "",
     type: "Villa",
     status: "For Sale",
+    construction_status: "Ready",
     suitability: "Home Living",
     beds: "",
     baths: "",
@@ -36,7 +38,6 @@ const Dashboard = () => {
     nearby_shopping: "",
     rental_yield: "",
     annual_growth: "",
-    market_comparison: "",
     analytics_text: "",
     is_featured: false,
   });
@@ -69,7 +70,7 @@ const Dashboard = () => {
   const fetchProperties = async () => {
     try {
       const res = await axios.get(
-        "https://api.rutererealty.com/api/properties"
+        "https://api.rutererealty.com/api/properties",
       );
       setProperties(res.data);
     } catch (err) {
@@ -89,7 +90,7 @@ const Dashboard = () => {
   const fetchTestimonials = async () => {
     try {
       const res = await axios.get(
-        "https://api.rutererealty.com/api/testimonials"
+        "https://api.rutererealty.com/api/testimonials",
       );
       setTestimonials(res.data);
     } catch (err) {
@@ -100,7 +101,7 @@ const Dashboard = () => {
   const fetchSubscribers = async () => {
     try {
       const res = await axios.get(
-        "https://api.rutererealty.com/api/subscribers"
+        "https://api.rutererealty.com/api/subscribers",
       );
       setSubscribers(res.data);
     } catch (err) {
@@ -111,7 +112,7 @@ const Dashboard = () => {
   const handleStatusChange = async (id, newStatus) => {
     try {
       const updatedInquiries = inquiries.map((msg) =>
-        msg.id === id ? { ...msg, status: newStatus } : msg
+        msg.id === id ? { ...msg, status: newStatus } : msg,
       );
       setInquiries(updatedInquiries);
       await axios.put(`https://api.rutererealty.com/api/inquiries/${id}`, {
@@ -128,7 +129,7 @@ const Dashboard = () => {
     try {
       await axios.put(
         "https://api.rutererealty.com/api/admin/update",
-        profileData
+        profileData,
       );
       alert("Profile Updated Successfully. Please login again.");
       localStorage.removeItem("isAdmin");
@@ -140,15 +141,13 @@ const Dashboard = () => {
 
   const handleLiveStatusUpdate = async (id, newStatus) => {
     const updatedProperties = properties.map((p) =>
-      p.id === id ? { ...p, status: newStatus } : p
+      p.id === id ? { ...p, status: newStatus } : p,
     );
     setProperties(updatedProperties);
     try {
       await axios.patch(
         `https://api.rutererealty.com/api/properties/${id}/status`,
-        {
-          status: newStatus,
-        }
+        { status: newStatus },
       );
     } catch (err) {
       alert("Error updating status");
@@ -156,17 +155,42 @@ const Dashboard = () => {
     }
   };
 
-  const handleUnitStatusChange = async (unitId, newStatus) => {
+  const handleLiveConstructionStatusUpdate = async (id, newStatus) => {
+    const updatedProperties = properties.map((p) =>
+      p.id === id ? { ...p, construction_status: newStatus } : p,
+    );
+    setProperties(updatedProperties);
     try {
       await axios.patch(
-        `https://api.rutererealty.com/api/units/${unitId}/status`,
-        {
-          status: newStatus,
-        }
+        `https://api.rutererealty.com/api/properties/${id}/status`,
+        { construction_status: newStatus },
       );
+    } catch (err) {
+      alert("Error updating construction status");
       fetchProperties();
+    }
+  };
+
+  const handleUnitStatusChange = async (unitId, newStatus) => {
+    try {
+      const updatedProperties = properties.map((prop) => {
+        if (!prop.units) return prop;
+        return {
+          ...prop,
+          units: prop.units.map((u) =>
+            u.id === unitId ? { ...u, status: newStatus } : u,
+          ),
+        };
+      });
+      setProperties(updatedProperties);
+
+      await axios.patch(
+        `https://api.rutererealty.com/api/units/${unitId}/status`,
+        { status: newStatus },
+      );
     } catch (err) {
       alert("Error updating unit status");
+      fetchProperties();
     }
   };
 
@@ -174,7 +198,7 @@ const Dashboard = () => {
     if (window.confirm("Remove this subscriber?")) {
       try {
         await axios.delete(
-          `https://api.rutererealty.com/api/subscribers/${id}`
+          `https://api.rutererealty.com/api/subscribers/${id}`,
         );
         fetchSubscribers();
       } catch (err) {
@@ -182,6 +206,7 @@ const Dashboard = () => {
       }
     }
   };
+
   const getStatusColor = (status) => {
     switch (status) {
       case "New":
@@ -212,14 +237,13 @@ const Dashboard = () => {
 
   const handleUnitChange = (index, field, value) => {
     const newUnits = units.map((unit, i) =>
-      i === index ? { ...unit, [field]: value } : unit
+      i === index ? { ...unit, [field]: value } : unit,
     );
     setUnits(newUnits);
   };
 
   const removeUnitField = (index) => {
-    const newUnits = units.filter((_, i) => i !== index);
-    setUnits(newUnits);
+    setUnits(units.filter((_, i) => i !== index));
   };
 
   const handleAmenityChange = (amenity) => {
@@ -243,6 +267,7 @@ const Dashboard = () => {
       location: property.location,
       type: property.type,
       status: property.status,
+      construction_status: property.construction_status || "Ready",
       suitability: property.suitability,
       beds: property.beds,
       baths: property.baths,
@@ -253,15 +278,26 @@ const Dashboard = () => {
       nearby_shopping: property.nearby_shopping,
       rental_yield: property.rental_yield,
       annual_growth: property.annual_growth,
-      market_comparison: property.market_comparison,
       analytics_text: property.analytics_text || "",
       is_featured: property.is_featured,
     });
 
+    const cleanPrice = (p) => p?.toString().replace(/[^0-9]/g, "") || "";
+
     if (property.units) {
-      const variants = property.units.filter(
-        (u) => u.price !== property.price || u.size !== property.sqm
-      );
+      const basePrice = cleanPrice(property.price);
+      const baseSqm = property.sqm;
+      let baseUnitFound = false;
+
+      const variants = property.units.filter((u) => {
+        const isBase = cleanPrice(u.price) === basePrice && u.size === baseSqm;
+        if (isBase && !baseUnitFound) {
+          baseUnitFound = true;
+          return false;
+        }
+        return true;
+      });
+
       setUnits(
         variants.map((u) => ({
           type: u.type,
@@ -269,12 +305,11 @@ const Dashboard = () => {
           size: u.size,
           beds: u.beds,
           baths: u.baths || "",
-        }))
+        })),
       );
     } else {
       setUnits([]);
     }
-
     setSelectedAmenities(property.amenities || []);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -288,6 +323,7 @@ const Dashboard = () => {
       location: "",
       type: "Villa",
       status: "For Sale",
+      construction_status: "Ready",
       suitability: "Home Living",
       beds: "",
       baths: "",
@@ -298,7 +334,6 @@ const Dashboard = () => {
       nearby_shopping: "",
       rental_yield: "",
       annual_growth: "",
-      market_comparison: "",
       analytics_text: "",
       is_featured: false,
     });
@@ -339,9 +374,7 @@ const Dashboard = () => {
         await axios.put(
           `https://api.rutererealty.com/api/properties/${editId}`,
           data,
-          {
-            headers: { "Content-Type": "multipart/form-data" },
-          }
+          { headers: { "Content-Type": "multipart/form-data" } },
         );
         alert("Property Updated Successfully!");
       } else {
@@ -370,6 +403,33 @@ const Dashboard = () => {
       fetchInquiries();
     }
   };
+
+  // --- REFINED FILTER LOGIC ---
+  const filteredInquiries = inquiries.filter((msg) => {
+    if (inboxFilter === "All") return true;
+    const rawSubject = msg.subject || "General Inquiry";
+    const subject = rawSubject.toLowerCase();
+
+    if (inboxFilter === "General")
+      return subject.includes("general") || subject.includes("contact");
+    if (inboxFilter === "Buying/Viewings")
+      return (
+        subject.includes("buying") ||
+        subject.includes("viewing") ||
+        subject.includes("request")
+      );
+    if (inboxFilter === "Investment")
+      return (
+        subject.includes("investment") ||
+        subject.includes("analytics") ||
+        subject.includes("data")
+      );
+    if (inboxFilter === "Selling")
+      return subject.includes("selling") || subject.includes("sale");
+    if (inboxFilter === "Partnership") return subject.includes("partnership");
+
+    return false;
+  });
 
   return (
     <div className="min-h-screen bg-gray-100 pb-20">
@@ -409,7 +469,7 @@ const Dashboard = () => {
                   </span>
                 )}
               </button>
-            )
+            ),
           )}
         </div>
       </div>
@@ -449,7 +509,7 @@ const Dashboard = () => {
                   type="file"
                   multiple
                   onChange={handleFileChange}
-                  className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-brand-navy file:text-white hover:file:bg-brand-gold"
+                  className="w-full text-sm text-gray-500"
                   accept="image/*"
                 />
               </div>
@@ -469,16 +529,16 @@ const Dashboard = () => {
                 </label>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-4">
                 <div className="group">
                   <label className="block text-xs font-bold text-gray-400 uppercase mb-2">
-                    Status Lifecycle
+                    Market Status
                   </label>
                   <select
                     name="status"
                     value={formData.status}
                     onChange={handleInputChange}
-                    className="border p-3 rounded w-full focus:outline-none focus:border-brand-gold text-sm"
+                    className="border p-3 rounded w-full focus:outline-none text-sm"
                   >
                     {["For Sale", "For Rent"].map((opt) => (
                       <option key={opt} value={opt}>
@@ -487,6 +547,27 @@ const Dashboard = () => {
                     ))}
                   </select>
                 </div>
+
+                {formData.status === "For Sale" && (
+                  <div className="group">
+                    <label className="block text-xs font-bold text-brand-navy uppercase mb-2">
+                      Project Phase
+                    </label>
+                    <select
+                      name="construction_status"
+                      value={formData.construction_status}
+                      onChange={handleInputChange}
+                      className="border p-3 rounded w-full focus:outline-none text-sm bg-blue-50 border-blue-200 text-brand-navy font-bold"
+                    >
+                      {["Off-plan", "Ongoing", "Ready"].map((opt) => (
+                        <option key={opt} value={opt}>
+                          {opt}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
                 <div className="group">
                   <label className="block text-xs font-bold text-gray-400 uppercase mb-2">
                     Classification
@@ -495,7 +576,7 @@ const Dashboard = () => {
                     name="suitability"
                     value={formData.suitability}
                     onChange={handleInputChange}
-                    className="border p-3 rounded w-full focus:outline-none focus:border-brand-gold text-sm"
+                    className="border p-3 rounded w-full focus:outline-none text-sm"
                   >
                     {[
                       "Home Living",
@@ -514,12 +595,10 @@ const Dashboard = () => {
                 <label className="block text-xs font-bold text-gray-400 uppercase mb-2">
                   Base Price
                 </label>
-
                 <div className="relative w-full">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400 pointer-events-none">
                     KES
                   </span>
-
                   <input
                     type="text"
                     name="price"
@@ -529,18 +608,14 @@ const Dashboard = () => {
                       const digitsOnly = e.target.value.replace(/[^\d]/g, "");
                       const formatted = digitsOnly.replace(
                         /\B(?=(\d{3})+(?!\d))/g,
-                        ","
+                        ",",
                       );
                       setFormData({ ...formData, price: formatted });
                     }}
-                    className="border p-3 pl-12 rounded w-full focus:outline-none focus:border-brand-gold font-bold text-brand-navy"
+                    className="border p-3 pl-12 rounded w-full focus:outline-none font-bold text-brand-navy"
                     required
                   />
                 </div>
-
-                <p className="text-[10px] text-gray-400 mt-1">
-                  This is the starting price displayed on the card.
-                </p>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -550,14 +625,14 @@ const Dashboard = () => {
                   placeholder="Title"
                   value={formData.title}
                   onChange={handleInputChange}
-                  className="border p-3 rounded w-full focus:outline-none focus:border-brand-gold"
+                  className="border p-3 rounded w-full focus:outline-none"
                   required
                 />
                 <select
                   name="type"
                   value={formData.type}
                   onChange={handleInputChange}
-                  className="border p-3 rounded w-full focus:outline-none focus:border-brand-gold"
+                  className="border p-3 rounded w-full focus:outline-none"
                 >
                   {["Villa", "Apartment", "Penthouse", "Land"].map((opt) => (
                     <option key={opt}>{opt}</option>
@@ -571,7 +646,7 @@ const Dashboard = () => {
                 placeholder="Location"
                 value={formData.location}
                 onChange={handleInputChange}
-                className="border p-3 rounded w-full focus:outline-none focus:border-brand-gold"
+                className="border p-3 rounded w-full focus:outline-none"
                 required
               />
 
@@ -583,7 +658,7 @@ const Dashboard = () => {
                   <input
                     type="number"
                     name="beds"
-                    placeholder="Base Beds"
+                    placeholder="Beds"
                     value={formData.beds}
                     onChange={handleInputChange}
                     className="border p-3 rounded text-sm focus:outline-none"
@@ -591,7 +666,7 @@ const Dashboard = () => {
                   <input
                     type="number"
                     name="baths"
-                    placeholder="Base Baths"
+                    placeholder="Baths"
                     value={formData.baths}
                     onChange={handleInputChange}
                     className="border p-3 rounded text-sm focus:outline-none"
@@ -599,7 +674,7 @@ const Dashboard = () => {
                   <input
                     type="number"
                     name="sqm"
-                    placeholder="Base SQM"
+                    placeholder="SQM"
                     value={formData.sqm}
                     onChange={handleInputChange}
                     className="border p-3 rounded text-sm focus:outline-none"
@@ -621,7 +696,6 @@ const Dashboard = () => {
                         }
                         className="border p-2 rounded text-xs w-1/4 focus:outline-none"
                       />
-
                       <div className="relative w-1/4">
                         <span className="absolute left-2 top-2 text-[10px] font-bold text-gray-400">
                           KES
@@ -636,7 +710,6 @@ const Dashboard = () => {
                           className="border p-2 pl-8 rounded text-xs w-full focus:outline-none"
                         />
                       </div>
-
                       <input
                         type="number"
                         placeholder="SQM"
@@ -685,34 +758,20 @@ const Dashboard = () => {
 
               <div className="bg-gray-50 p-6 rounded border border-gray-200 space-y-4">
                 <h4 className="font-bold text-brand-navy text-sm uppercase">
-                  {formData.status === "For Rent"
-                    ? "Rental Costs & Analytics"
-                    : "Investment Analysis"}{" "}
-                  (Gated Data)
+                  Investment Analysis (Gated Data)
                 </h4>
-
-                <div className="w-full">
-                  <label className="block text-xs font-bold text-gray-400 uppercase mb-2">
-                    Manual Analysis Paragraph (Optional)
-                  </label>
-                  <textarea
-                    name="analytics_text"
-                    placeholder="Write your own market analysis here. If left blank, the system will auto-generate one."
-                    value={formData.analytics_text}
-                    onChange={handleInputChange}
-                    className="border p-3 rounded w-full text-sm focus:outline-none h-24"
-                  ></textarea>
-                </div>
-
-                <div className="grid grid-cols-3 gap-2">
+                <textarea
+                  name="analytics_text"
+                  placeholder="Write your own market analysis..."
+                  value={formData.analytics_text}
+                  onChange={handleInputChange}
+                  className="border p-3 rounded w-full text-sm focus:outline-none h-24"
+                ></textarea>
+                <div className="grid grid-cols-2 gap-2">
                   <input
                     type="text"
                     name="rental_yield"
-                    placeholder={
-                      formData.status === "For Rent"
-                        ? "Est. Utilities"
-                        : "Rental Yield"
-                    }
+                    placeholder="Rental Yield / Est. Utilities"
                     value={formData.rental_yield}
                     onChange={handleInputChange}
                     className="border p-3 rounded w-full text-sm focus:outline-none"
@@ -720,20 +779,8 @@ const Dashboard = () => {
                   <input
                     type="text"
                     name="annual_growth"
-                    placeholder={
-                      formData.status === "For Rent"
-                        ? "Move-in Cost"
-                        : "Appreciation"
-                    }
+                    placeholder="Appreciation / Move-in Cost"
                     value={formData.annual_growth}
-                    onChange={handleInputChange}
-                    className="border p-3 rounded w-full text-sm focus:outline-none"
-                  />
-                  <input
-                    type="text"
-                    name="market_comparison"
-                    placeholder="Vs Market"
-                    value={formData.market_comparison}
                     onChange={handleInputChange}
                     className="border p-3 rounded w-full text-sm focus:outline-none"
                   />
@@ -791,7 +838,7 @@ const Dashboard = () => {
                 placeholder="Description..."
                 value={formData.description}
                 onChange={handleInputChange}
-                className="border p-3 rounded w-full h-24 focus:outline-none focus:border-brand-gold"
+                className="border p-3 rounded w-full h-24 focus:outline-none"
                 required
               ></textarea>
               <button className="w-full bg-brand-gold text-white font-bold py-4 rounded hover:bg-yellow-600 transition shadow-lg uppercase text-sm tracking-widest">
@@ -808,11 +855,7 @@ const Dashboard = () => {
               {properties.map((prop) => (
                 <div
                   key={prop.id}
-                  className={`bg-white p-4 rounded-xl shadow-md border hover:shadow-lg transition block ${
-                    isEditing && editId === prop.id
-                      ? "border-brand-gold ring-1 ring-brand-gold"
-                      : "border-gray-100"
-                  }`}
+                  className={`bg-white p-4 rounded-xl shadow-md border hover:shadow-lg transition block ${isEditing && editId === prop.id ? "border-brand-gold ring-1 ring-brand-gold" : "border-gray-100"}`}
                 >
                   <div className="flex gap-4 items-center">
                     <img
@@ -832,32 +875,58 @@ const Dashboard = () => {
                           {prop.suitability}
                         </span>
                       </div>
-                      <div className="mt-2 flex items-center gap-2">
-                        <span className="text-[10px] uppercase font-bold text-gray-400">
-                          Status:
-                        </span>
-                        <select
-                          value={prop.status}
-                          onChange={(e) =>
-                            handleLiveStatusUpdate(prop.id, e.target.value)
-                          }
-                          className="text-xs font-bold border rounded px-2 py-1 cursor-pointer outline-none bg-blue-50 text-brand-navy border-blue-200"
-                        >
-                          {[
-                            "For Sale",
-                            "For Rent",
-                            "Sold",
-                            "Rented",
-                            "Back on Market",
-                            "Off Market",
-                          ].map((opt) => (
-                            <option key={opt} value={opt}>
-                              {opt}
-                            </option>
-                          ))}
-                        </select>
+
+                      <div className="mt-2 flex items-center gap-2 flex-wrap">
+                        <div className="flex items-center gap-1">
+                          <span className="text-[10px] uppercase font-bold text-gray-400">
+                            Status:
+                          </span>
+                          <select
+                            value={prop.status}
+                            onChange={(e) =>
+                              handleLiveStatusUpdate(prop.id, e.target.value)
+                            }
+                            className="text-xs font-bold border rounded px-2 py-1 cursor-pointer outline-none bg-blue-50 text-brand-navy border-blue-200"
+                          >
+                            {[
+                              "For Sale",
+                              "For Rent",
+                              "Sold",
+                              "Rented",
+                              "Back on Market",
+                              "Off Market",
+                            ].map((opt) => (
+                              <option key={opt} value={opt}>
+                                {opt}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {prop.status === "For Sale" && (
+                          <div className="flex items-center gap-1">
+                            <span className="text-[10px] uppercase font-bold text-gray-400">
+                              Phase:
+                            </span>
+                            <select
+                              value={prop.construction_status || "Ready"}
+                              onChange={(e) =>
+                                handleLiveConstructionStatusUpdate(
+                                  prop.id,
+                                  e.target.value,
+                                )
+                              }
+                              className="text-xs font-bold border rounded px-2 py-1 cursor-pointer outline-none bg-gray-100 text-gray-600 border-gray-200"
+                            >
+                              <option value="Off-plan">Off-plan</option>
+                              <option value="Ongoing">Ongoing</option>
+                              <option value="Ready">Ready</option>
+                            </select>
+                          </div>
+                        )}
                       </div>
                     </div>
+
                     <div className="flex flex-col gap-2">
                       <button
                         onClick={() => handleEdit(prop)}
@@ -870,14 +939,14 @@ const Dashboard = () => {
                         <button
                           onClick={() =>
                             setExpandedPropertyId(
-                              expandedPropertyId === prop.id ? null : prop.id
+                              expandedPropertyId === prop.id ? null : prop.id,
                             )
                           }
-                          className="text-gray-500 border border-gray-300 font-bold text-xs uppercase px-3 py-2 rounded hover:bg-gray-100 transition"
+                          className="text-purple-600 border border-purple-200 font-bold text-xs uppercase px-3 py-2 rounded hover:bg-purple-600 hover:text-white transition"
                         >
                           {expandedPropertyId === prop.id
                             ? "Hide Units"
-                            : "Units"}
+                            : "Manage Units"}
                         </button>
                       )}
 
@@ -909,19 +978,24 @@ const Dashboard = () => {
                                 {unit.price} • {unit.size} sqm
                               </span>
                             </div>
+
                             <select
                               value={unit.status}
                               onChange={(e) =>
                                 handleUnitStatusChange(unit.id, e.target.value)
                               }
                               className={`text-xs font-bold px-2 py-1 rounded border outline-none cursor-pointer ${
-                                unit.status === "Sold"
+                                ["Sold", "Rented"].includes(unit.status)
                                   ? "bg-red-100 text-red-600 border-red-200"
                                   : "bg-green-100 text-green-600 border-green-200"
                               }`}
                             >
                               <option value="Available">Available</option>
-                              <option value="Sold">Sold / Taken</option>
+                              {prop.status === "For Rent" ? (
+                                <option value="Rented">Rented</option>
+                              ) : (
+                                <option value="Sold">Sold</option>
+                              )}
                             </select>
                           </div>
                         ))}
@@ -930,94 +1004,217 @@ const Dashboard = () => {
                   )}
                 </div>
               ))}
-              {properties.length === 0 && (
-                <p className="text-gray-400 text-center py-10">
-                  No properties listed yet.
-                </p>
-              )}
             </div>
           </div>
         </div>
       )}
 
       {activeTab === "inbox" && (
-        <div className="container mx-auto px-6 max-w-4xl">
-          <div className="bg-white rounded-xl shadow-lg p-8 min-h-[400px]">
-            <h2 className="text-2xl font-bold text-brand-navy mb-8">
-              Customer Inquiries
-            </h2>
-            <div className="space-y-6">
-              {inquiries.map((msg) => {
-                const relatedProperty = properties.find(
-                  (p) => p.id === msg.property_id
-                );
-                return (
-                  <div
-                    key={msg.id}
-                    className="border-b border-gray-100 pb-6 last:border-0 hover:bg-gray-50 p-4 rounded transition border-l-4 border-l-blue-500"
-                  >
-                    <div className="flex justify-between items-start mb-2">
-                      <div>
-                        <div className="flex items-center gap-3">
-                          <h4 className="font-bold text-brand-navy text-lg">
-                            {msg.name}
-                          </h4>
-                          <select
-                            value={msg.status || "New"}
-                            onChange={(e) =>
-                              handleStatusChange(msg.id, e.target.value)
-                            }
-                            className={`text-xs font-bold px-3 py-1 rounded-full border cursor-pointer outline-none appearance-none ${getStatusColor(
-                              msg.status || "New"
-                            )}`}
-                          >
-                            <option value="New">● New</option>
-                            <option value="Contacted">● Contacted</option>
-                            <option value="Viewing">● Viewing</option>
-                            <option value="Closed">● Closed</option>
-                          </select>
-                        </div>
-                        <div className="mt-1">
-                          <a
-                            href={`mailto:${msg.email}`}
-                            className="text-sm text-gray-500 hover:text-brand-gold"
-                          >
-                            {msg.email}
-                          </a>
-                          <span className="text-gray-300 mx-2">|</span>
-                          <span className="text-sm text-gray-500">
-                            {msg.phone}
-                          </span>
-                        </div>
-                      </div>
-                      <span className="text-xs text-gray-400 font-medium bg-gray-100 px-2 py-1 rounded">
-                        {new Date(msg.created_at).toLocaleDateString()}
-                      </span>
-                    </div>
-                    {msg.property_id && (
-                      <div className="mb-2">
-                        <span className="bg-blue-50 text-brand-navy text-xs font-bold px-2 py-1 rounded border border-blue-100">
-                          Re:{" "}
-                          {relatedProperty
-                            ? relatedProperty.title
-                            : `Property #${msg.property_id}`}
-                        </span>
-                      </div>
-                    )}
-                    <p className="text-gray-700 bg-gray-50 p-4 rounded-lg border border-gray-100 text-sm leading-relaxed mb-3 mt-2">
-                      {msg.message}
-                    </p>
-                    <div className="flex justify-end gap-4">
-                      <button
-                        onClick={() => handleDeleteInquiry(msg.id)}
-                        className="text-xs font-bold text-red-500 border border-red-200 px-4 py-2 rounded hover:bg-red-500 hover:text-white transition uppercase tracking-wider"
+        <div className="container mx-auto px-6 max-w-6xl">
+          <div className="bg-white rounded-xl shadow-lg p-8 min-h-[600px] flex flex-col">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-brand-navy">
+                Customer Inquiries
+              </h2>
+            </div>
+
+            <div className="flex gap-2 mb-6 border-b border-gray-100 pb-2 overflow-x-auto">
+              {[
+                "All",
+                "General",
+                "Buying/Viewings",
+                "Investment",
+                "Selling",
+                "Partnership",
+              ].map((filter) => (
+                <button
+                  key={filter}
+                  onClick={() => setInboxFilter(filter)}
+                  className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-colors ${
+                    inboxFilter === filter
+                      ? "bg-brand-navy text-white"
+                      : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                  }`}
+                >
+                  {filter}
+                </button>
+              ))}
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm text-left text-gray-500">
+                <thead className="text-xs text-brand-navy uppercase bg-gray-50 border-b border-gray-200">
+                  <tr>
+                    <th scope="col" className="px-6 py-4">
+                      Date
+                    </th>
+                    <th scope="col" className="px-6 py-4">
+                      Client Details
+                    </th>
+                    <th scope="col" className="px-6 py-4">
+                      Subject / Property
+                    </th>
+                    <th scope="col" className="px-6 py-4 w-1/3">
+                      Message
+                    </th>
+                    <th scope="col" className="px-6 py-4">
+                      Status
+                    </th>
+                    <th scope="col" className="px-6 py-4 text-right">
+                      Action
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredInquiries.length > 0 ? (
+                    filteredInquiries.map((msg) => {
+                      const relatedProperty = properties.find(
+                        (p) => p.id === msg.property_id,
+                      );
+                      return (
+                        <tr
+                          key={msg.id}
+                          className="bg-white border-b hover:bg-gray-50 transition-colors"
+                        >
+                          <td className="px-6 py-4 whitespace-nowrap font-medium">
+                            {new Date(msg.created_at).toLocaleDateString()}
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="font-bold text-brand-navy">
+                              {msg.name}
+                            </div>
+                            <div className="text-xs text-gray-400">
+                              {msg.email}
+                            </div>
+                            <div className="text-xs text-gray-400">
+                              {msg.phone}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span
+                              className={`block font-bold text-xs uppercase tracking-wide mb-1 ${
+                                (msg.subject || "").includes("Investment")
+                                  ? "text-green-600"
+                                  : (msg.subject || "").includes("Buying") ||
+                                      (msg.subject || "").includes("Viewing")
+                                    ? "text-purple-600"
+                                    : "text-brand-gold"
+                              }`}
+                            >
+                              {msg.subject || "General Inquiry"}
+                            </span>
+                            {msg.property_id && (
+                              <span className="bg-blue-50 text-brand-navy text-[10px] font-bold px-2 py-1 rounded border border-blue-100 inline-block truncate max-w-[150px]">
+                                Re:{" "}
+                                {relatedProperty
+                                  ? relatedProperty.title
+                                  : `#${msg.property_id}`}
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="max-h-20 overflow-y-auto custom-scrollbar text-xs leading-relaxed text-gray-600">
+                              {msg.message}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <select
+                              value={msg.status || "New"}
+                              onChange={(e) =>
+                                handleStatusChange(msg.id, e.target.value)
+                              }
+                              className={`text-xs font-bold px-3 py-1 rounded-full border cursor-pointer outline-none appearance-none ${getStatusColor(msg.status || "New")}`}
+                            >
+                              <option value="New">● New</option>
+                              <option value="Contacted">● Contacted</option>
+                              <option value="Viewing">● Viewing</option>
+                              <option value="Closed">● Closed</option>
+                            </select>
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            <button
+                              onClick={() => handleDeleteInquiry(msg.id)}
+                              className="text-red-500 hover:text-red-700 font-bold text-xs uppercase tracking-wider"
+                            >
+                              Delete
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  ) : (
+                    <tr>
+                      <td
+                        colSpan="6"
+                        className="text-center py-10 text-gray-400"
                       >
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
+                        No messages found in this category.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {activeTab === "subscribers" && (
+        <div className="container mx-auto px-6 max-w-4xl">
+          <div className="bg-white rounded-xl shadow-lg p-8 min-h-[600px]">
+            <h2 className="text-2xl font-bold text-brand-navy mb-6">
+              Newsletter Subscribers
+            </h2>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm text-left text-gray-500">
+                <thead className="text-xs text-brand-navy uppercase bg-gray-50 border-b border-gray-200">
+                  <tr>
+                    <th scope="col" className="px-6 py-4">
+                      Date Joined
+                    </th>
+                    <th scope="col" className="px-6 py-4">
+                      Email Address
+                    </th>
+                    <th scope="col" className="px-6 py-4 text-right">
+                      Action
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {subscribers.length > 0 ? (
+                    subscribers.map((sub) => (
+                      <tr
+                        key={sub.id}
+                        className="bg-white border-b hover:bg-gray-50"
+                      >
+                        <td className="px-6 py-4 font-medium">
+                          {new Date(sub.created_at).toLocaleDateString()}
+                        </td>
+                        <td className="px-6 py-4 font-bold text-gray-700">
+                          {sub.email}
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <button
+                            onClick={() => handleDeleteSubscriber(sub.id)}
+                            className="text-red-500 hover:text-red-700 font-bold text-xs uppercase tracking-wider"
+                          >
+                            Remove
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td
+                        colSpan="3"
+                        className="text-center py-10 text-gray-400"
+                      >
+                        No subscribers yet.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
@@ -1041,13 +1238,10 @@ const Dashboard = () => {
             <h2 className="text-2xl font-bold text-brand-navy mb-6">
               Account Settings
             </h2>
-            <p className="text-sm text-gray-500 mb-6">
-              Update your login credentials here.
-            </p>
             <form onSubmit={handleUpdateProfile} className="space-y-6">
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-2">
-                  New Email Address (Optional)
+                  New Email Address
                 </label>
                 <input
                   type="email"
@@ -1055,13 +1249,13 @@ const Dashboard = () => {
                   onChange={(e) =>
                     setProfileData({ ...profileData, email: e.target.value })
                   }
-                  className="w-full border border-gray-300 p-3 rounded focus:outline-none focus:border-brand-navy"
-                  placeholder="admin@kipekee.com"
+                  className="w-full border border-gray-300 p-3 rounded"
+                  placeholder="admin@rutere.com"
                 />
               </div>
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-2">
-                  Current Password (Required)
+                  Current Password
                 </label>
                 <input
                   type="password"
@@ -1073,13 +1267,12 @@ const Dashboard = () => {
                       current_password: e.target.value,
                     })
                   }
-                  className="w-full border border-gray-300 p-3 rounded focus:outline-none focus:border-brand-navy"
-                  placeholder="••••••••"
+                  className="w-full border border-gray-300 p-3 rounded"
                 />
               </div>
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-2">
-                  New Password (Optional)
+                  New Password
                 </label>
                 <input
                   type="password"
@@ -1090,68 +1283,13 @@ const Dashboard = () => {
                       new_password: e.target.value,
                     })
                   }
-                  className="w-full border border-gray-300 p-3 rounded focus:outline-none focus:border-brand-navy"
-                  placeholder="••••••••"
+                  className="w-full border border-gray-300 p-3 rounded"
                 />
               </div>
               <button className="w-full bg-brand-navy text-white font-bold py-4 rounded hover:bg-brand-gold transition shadow-lg uppercase text-sm tracking-widest">
                 Save Changes
               </button>
             </form>
-          </div>
-        </div>
-      )}
-
-      {activeTab === "subscribers" && (
-        <div className="container mx-auto px-6 max-w-4xl">
-          <div className="bg-white rounded-xl shadow-lg p-8 min-h-[400px]">
-            <h2 className="text-2xl font-bold text-brand-navy mb-8">
-              Newsletter Subscribers
-            </h2>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left text-gray-500">
-                <thead className="text-xs text-gray-700 uppercase bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3">Email Address</th>
-                    <th className="px-6 py-3">Date Subscribed</th>
-                    <th className="px-6 py-3 text-right">Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {subscribers.map((sub) => (
-                    <tr
-                      key={sub.id}
-                      className="bg-white border-b hover:bg-gray-50"
-                    >
-                      <td className="px-6 py-4 font-medium text-gray-900">
-                        {sub.email}
-                      </td>
-                      <td className="px-6 py-4">
-                        {new Date(sub.created_at).toLocaleDateString()}
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <button
-                          onClick={() => handleDeleteSubscriber(sub.id)}
-                          className="font-medium text-red-600 hover:underline"
-                        >
-                          Remove
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                  {subscribers.length === 0 && (
-                    <tr>
-                      <td
-                        colSpan="3"
-                        className="px-6 py-8 text-center text-gray-400"
-                      >
-                        No subscribers yet.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
           </div>
         </div>
       )}

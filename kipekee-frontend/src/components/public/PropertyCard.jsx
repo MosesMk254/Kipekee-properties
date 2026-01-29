@@ -1,16 +1,8 @@
 import { Link } from "react-router-dom";
-import { useState, useEffect } from "react";
 
 const PropertyCard = ({ property }) => {
-  const [isLiked, setIsLiked] = useState(false);
-
-  const fixImage = (url) => {
-    if (!url) return "";
-    return url.replace("http://127.0.0.1:5000", "https://api.rutererealty.com");
-  };
-
   const isOffMarket = ["Sold", "Rented", "Off Market"].includes(
-    property.status
+    property.status,
   );
 
   const availableUnits = property.units
@@ -38,46 +30,23 @@ const PropertyCard = ({ property }) => {
     };
 
     const sortedUnits = [...availableUnits].sort(
-      (a, b) => parsePrice(a.price) - parsePrice(b.price)
+      (a, b) => parsePrice(a.price) - parsePrice(b.price),
     );
-    const cheapestUnit = sortedUnits[0];
 
-    let priceStr = cheapestUnit.price.trim();
-    if (
-      !priceStr.toUpperCase().startsWith("KES") &&
-      !priceStr.toUpperCase().startsWith("KSH")
-    ) {
-      priceStr = `KES ${priceStr}`;
+    if (sortedUnits.length > 0) {
+      const cheapestUnit = sortedUnits[0];
+      let priceStr = cheapestUnit.price.trim();
+      if (
+        !priceStr.toUpperCase().startsWith("KES") &&
+        !priceStr.toUpperCase().startsWith("KSH")
+      ) {
+        priceStr = `KES ${priceStr}`;
+      }
+      displayPrice = `From ${priceStr}`;
     }
-    displayPrice = `From ${priceStr}`;
   }
 
   const displayBeds = property.beds === 0 ? "Studio" : `${property.beds} Beds`;
-
-  useEffect(() => {
-    const savedLikes = JSON.parse(
-      localStorage.getItem("kipekee_likes") || "[]"
-    );
-    if (savedLikes.includes(property.id)) {
-      setIsLiked(true);
-    }
-  }, [property.id]);
-
-  const toggleLike = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const savedLikes = JSON.parse(
-      localStorage.getItem("kipekee_likes") || "[]"
-    );
-    let newLikes;
-    if (isLiked) {
-      newLikes = savedLikes.filter((id) => id !== property.id);
-    } else {
-      newLikes = [...savedLikes, property.id];
-    }
-    localStorage.setItem("kipekee_likes", JSON.stringify(newLikes));
-    setIsLiked(!isLiked);
-  };
 
   const getSuitabilityColor = (suitability) => {
     switch (suitability) {
@@ -89,6 +58,19 @@ const PropertyCard = ({ property }) => {
         return "bg-purple-100 text-purple-700 border-purple-200";
       default:
         return "bg-gray-100 text-gray-600 border-gray-200";
+    }
+  };
+
+  const getPhaseColor = (phase) => {
+    switch (phase) {
+      case "Off-plan":
+        return "bg-purple-600";
+      case "Ongoing":
+        return "bg-orange-500";
+      case "Ready":
+        return "bg-green-600";
+      default:
+        return "bg-brand-navy";
     }
   };
 
@@ -110,44 +92,26 @@ const PropertyCard = ({ property }) => {
 
         <div className="absolute top-5 left-5 z-10">
           <div
-            className={`backdrop-blur-md border border-white/20 text-white text-xs font-bold px-4 py-2 uppercase tracking-wider rounded-full shadow-lg ${
+            className={`backdrop-blur-md border border-white/20 text-white text-xs font-bold px-4 py-2 uppercase tracking-wider rounded-full shadow-lg w-fit ${
               property.status === "Sold"
                 ? "bg-red-600"
                 : property.status === "Rented"
-                ? "bg-orange-500"
-                : property.status === "Off Market"
-                ? "bg-gray-600"
-                : "bg-white/30"
+                  ? "bg-orange-500"
+                  : property.status === "Off Market"
+                    ? "bg-gray-600"
+                    : "bg-brand-navy/80"
             }`}
           >
             {property.status}
           </div>
         </div>
 
-        {!isOffMarket && (
-          <button
-            onClick={toggleLike}
-            className={`absolute top-5 right-5 z-20 bg-white/30 backdrop-blur-md border border-white/20 p-3 rounded-full transition-all duration-300 shadow-lg group-hover:scale-110 ${
-              isLiked
-                ? "bg-white text-red-500"
-                : "text-white hover:bg-white hover:text-red-500"
-            }`}
+        {property.status === "For Sale" && property.construction_status && (
+          <div
+            className={`absolute top-5 right-5 z-10 text-white text-xs font-bold px-4 py-2 uppercase tracking-wider rounded-full shadow-lg border border-white/20 ${getPhaseColor(property.construction_status)}`}
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill={isLiked ? "currentColor" : "none"}
-              viewBox="0 0 24 24"
-              strokeWidth={2}
-              stroke="currentColor"
-              className="w-5 h-5"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"
-              />
-            </svg>
-          </button>
+            {property.construction_status}
+          </div>
         )}
 
         <div className="absolute bottom-10 left-6 z-20 pr-6">
@@ -219,7 +183,7 @@ const PropertyCard = ({ property }) => {
         <div className="flex items-center justify-between mt-2 pt-2">
           <span
             className={`text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider border ${getSuitabilityColor(
-              property.suitability
+              property.suitability,
             )}`}
           >
             {property.suitability || "Home Living"}
