@@ -10,6 +10,7 @@ lerna-debug.log*
 # Dependencies
 node_modules
 kipekee-frontend/node_modules/
+kipekee-frontend/dist/
 venv/
 .venv/
 env/
