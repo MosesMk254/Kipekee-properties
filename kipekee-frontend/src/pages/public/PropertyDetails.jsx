@@ -23,17 +23,12 @@ const PropertyDetails = () => {
   });
   const [formStatus, setFormStatus] = useState("");
 
-  const fixImage = (url) => {
-    if (!url) return "";
-    return url.replace("http://127.0.0.1:5000", "https://api.rutererealty.com");
-  };
-
   useEffect(() => {
     window.scrollTo(0, 0);
     const fetchDetails = async () => {
       try {
         const res = await axios.get(
-          `https://api.rutererealty.com/api/properties/${id}`
+          `https://api.rutererealty.com/api/properties/${id}`,
         );
         setProperty(res.data);
         setLoading(false);
@@ -52,6 +47,7 @@ const PropertyDetails = () => {
         name: unlockForm.name,
         email: unlockForm.email,
         phone: unlockForm.phone,
+        subject: "Investment Data",
         message: `[ANALYTICS UNLOCK] User unlocked investment data for: ${property.title}`,
         property_id: property.id,
       });
@@ -72,6 +68,7 @@ const PropertyDetails = () => {
     try {
       await axios.post("https://api.rutererealty.com/api/inquiries", {
         ...contactForm,
+        subject: "Property Viewing",
         message: finalMessage,
         property_id: property.id,
       });
@@ -118,9 +115,8 @@ const PropertyDetails = () => {
     const amenitiesText = property.nearby_schools
       ? `including proximity to ${property.nearby_schools}`
       : "including excellent local educational facilities";
-    const marketText = property.market_comparison
-      ? `This asset is currently ${property.market_comparison.toLowerCase()} compared to the area average.`
-      : "This asset is competitively priced for the current market.";
+    const marketText =
+      "This asset is competitively priced for the current market.";
     return `Our proprietary analysis indicates strong fundamentals for this location, ${amenitiesText}. ${marketText} Combined with projected appreciation, this property represents a compelling opportunity for ${property.suitability.toLowerCase()}.`;
   };
 

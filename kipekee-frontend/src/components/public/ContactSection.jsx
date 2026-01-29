@@ -23,6 +23,7 @@ const ContactSection = () => {
       name: `${formData.firstName} ${formData.lastName}`,
       email: formData.email,
       phone: formData.phone,
+      subject: "General Inquiry",
       message: formData.message,
     };
 

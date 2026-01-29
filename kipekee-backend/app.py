@@ -67,12 +67,14 @@ class Property(db.Model):
     price = db.Column(db.String(50), nullable=False)
     location = db.Column(db.String(100), nullable=False)
     type = db.Column(db.String(50), nullable=False)
-    status = db.Column(db.String(50), nullable=False)
-    suitability = db.Column(db.String(50), default="Home Living")
     
+    status = db.Column(db.String(50), nullable=False)
+    
+    construction_status = db.Column(db.String(50), default="Ready") 
+
+    suitability = db.Column(db.String(50), default="Home Living")
     rental_yield = db.Column(db.String(50), default="0%")
     annual_growth = db.Column(db.String(50), default="0%")
-    market_comparison = db.Column(db.String(50), default="Average")
     analytics_text = db.Column(db.Text, default="") 
     
     nearby_schools = db.Column(db.String(200), default="")
@@ -109,10 +111,10 @@ class Property(db.Model):
             'location': self.location,
             'type': self.type,
             'status': self.status,
+            'construction_status': self.construction_status,
             'suitability': self.suitability,
             'rental_yield': self.rental_yield,
             'annual_growth': self.annual_growth,
-            'market_comparison': self.market_comparison,
             'analytics_text': self.analytics_text,
             'nearby_schools': self.nearby_schools,
             'nearby_hospitals': self.nearby_hospitals,
@@ -137,6 +139,9 @@ class Inquiry(db.Model):
     name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(120), nullable=False)
     phone = db.Column(db.String(20))
+    
+    subject = db.Column(db.String(100), default="General Inquiry") 
+    
     message = db.Column(db.Text, nullable=False)
     property_id = db.Column(db.Integer, db.ForeignKey('property.id'), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -148,6 +153,7 @@ class Inquiry(db.Model):
             'name': self.name,
             'email': self.email,
             'phone': self.phone,
+            'subject': self.subject,
             'message': self.message,
             'property_id': self.property_id,
             'created_at': self.created_at.isoformat() + 'Z',
@@ -181,7 +187,7 @@ def init_db():
     with app.app_context():
         db.create_all()
         if User.query.count() == 0:
-            admin = User(email="admin@kipekee.com")
+            admin = User(email="admin@rutere.com")
             admin.set_password("admin123")
             db.session.add(admin)
             db.session.commit()
@@ -235,10 +241,11 @@ def update_property(id):
         prop.location = request.form['location']
         prop.type = request.form['type']
         prop.status = request.form['status']
+        prop.construction_status = request.form.get('construction_status', 'Ready')
+        
         prop.suitability = request.form.get('suitability', 'Home Living')
         prop.rental_yield = request.form.get('rental_yield', 'N/A')
         prop.annual_growth = request.form.get('annual_growth', 'N/A')
-        prop.market_comparison = request.form.get('market_comparison', 'Average')
         prop.analytics_text = request.form.get('analytics_text', '')
         prop.nearby_schools = request.form.get('nearby_schools', '')
         prop.nearby_hospitals = request.form.get('nearby_hospitals', '')
@@ -314,10 +321,11 @@ def add_property():
             location=request.form['location'],
             type=request.form['type'],
             status=request.form['status'],
+            construction_status=request.form.get('construction_status', 'Ready'),
+            
             suitability=request.form.get('suitability', 'Home Living'),
             rental_yield=request.form.get('rental_yield', 'N/A'),
             annual_growth=request.form.get('annual_growth', 'N/A'),
-            market_comparison=request.form.get('market_comparison', 'Average'),
             analytics_text=request.form.get('analytics_text', ''),
             nearby_schools=request.form.get('nearby_schools', ''),
             nearby_hospitals=request.form.get('nearby_hospitals', ''),
@@ -391,14 +399,19 @@ def update_unit_status(id):
 def update_property_status(id):
     property = Property.query.get_or_404(id)
     data = request.get_json()
+    
     if 'status' in data:
         new_status = data['status']
         property.status = new_status
         if new_status in ['Sold', 'Rented', 'Off Market']:
             for unit in property.units:
                 unit.status = 'Sold'
+                
+    if 'construction_status' in data:
+        property.construction_status = data['construction_status']
+        
     db.session.commit()
-    return jsonify({"message": "Property and Unit statuses updated"})
+    return jsonify({"message": "Property status updated"})
 
 @app.route('/api/properties/<int:id>', methods=['DELETE'])
 def delete_property(id):
@@ -416,6 +429,9 @@ def add_inquiry():
             name=data.get('name'),
             email=data.get('email'),
             phone=data.get('phone'),
+            
+            subject=data.get('subject', 'General Inquiry'), 
+            
             message=data.get('message'),
             property_id=data.get('property_id') 
         )
@@ -425,13 +441,14 @@ def add_inquiry():
         return jsonify({"error": "Database Error", "details": str(e)}), 500
 
     try:
-        subject = f"New Inquiry from {data.get('name')}"
+        subject = f"New Inquiry: {data.get('subject', 'General')}"
         body = f"""
         You have received a new inquiry on Rutere Realty!
 
         Name: {data.get('name')}
         Email: {data.get('email')}
         Phone: {data.get('phone')}
+        Subject: {data.get('subject', 'N/A')}
         
         Message:
         {data.get('message')}
@@ -470,9 +487,15 @@ def update_inquiry_status(id):
     db.session.commit()
     return jsonify({"message": "Status updated"})
 
-@app.route('/api/testimonials', methods=['GET'])
-def get_testimonials():
+@app.route('/api/testimonials', methods=['GET', 'POST'])
+def handle_testimonials():
+    if request.method == 'POST':
+        return jsonify({"message": "Testimonial added"}), 201
     return jsonify([]) 
+
+@app.route('/api/testimonials/<int:id>', methods=['DELETE'])
+def delete_testimonial(id):
+    return jsonify({"message": "Deleted"}), 200
 
 @app.route('/api/subscribe', methods=['POST'])
 def subscribe():

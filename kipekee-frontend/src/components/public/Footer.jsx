@@ -48,6 +48,8 @@ const Footer = () => {
             <div className="flex space-x-3">
               <a
                 href="https://www.facebook.com/profile.php?id=61586123566597"
+                target="_blank"
+                rel="noreferrer"
                 className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center text-white hover:bg-brand-gold hover:border-brand-gold hover:text-white transition-all duration-300"
               >
                 <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
@@ -56,6 +58,8 @@ const Footer = () => {
               </a>
               <a
                 href="https://www.instagram.com/kipekeeproperties/?utm_source=ig_web_button_share_sheet"
+                target="_blank"
+                rel="noreferrer"
                 className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center text-white hover:bg-brand-gold hover:border-brand-gold hover:text-white transition-all duration-300"
               >
                 <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
@@ -162,10 +166,48 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-gray-500">
+        <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-gray-500 gap-4">
           <p>
             © {new Date().getFullYear()} Rutere Realty. All rights reserved.
           </p>
+
+          <div className="flex items-center space-x-4 bg-white/5 px-4 py-2 rounded-full border border-white/5">
+            <span className="text-gray-400">
+              Created by{" "}
+              <span className="text-white font-bold">Moses Mutisya</span>
+            </span>
+            <div className="flex space-x-3 border-l border-gray-600 pl-3">
+              <a
+                href="mailto:mutisyamoses722@gmail.com"
+                className="text-gray-400 hover:text-brand-gold transition-colors"
+                title="Email Me"
+              >
+                <svg
+                  className="w-3.5 h-3.5"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
+                </svg>
+              </a>
+              <a
+                href="https://www.linkedin.com/in/moses-mutisya-96b283261"
+                target="_blank"
+                rel="noreferrer"
+                className="text-gray-400 hover:text-brand-gold transition-colors"
+                title="LinkedIn Profile"
+              >
+                <svg
+                  className="w-3.5 h-3.5"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
+                </svg>
+              </a>
+            </div>
+          </div>
+
           <div className="flex space-x-6 mt-4 md:mt-0">
             <a href="#" className="hover:text-white transition-colors">
               Privacy Policy
